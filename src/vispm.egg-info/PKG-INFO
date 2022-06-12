@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: vispm
-Version: 0.0.3
+Version: 0.0.4
 Summary: A visulisation package for process mining activties
 Home-page: https://github.com/AdamBanham/vispm
 Author: Adam
@@ -15,7 +15,7 @@ License-File: LICENSE
 
 
 <p align="center">
-    <img src="./assets/_logo.png">
+    <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/_logo.svg" style="transform: scale(2.0)">
 </p>
 
 # VISPM: Visualisations for Process Mining
