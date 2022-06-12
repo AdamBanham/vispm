@@ -1,6 +1,6 @@
 
 <p align="center">
-    <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/_logo.svg" style="transform: scale(2.0)>
+    <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/_logo.svg" style="transform: scale(2.0)">
 </p>
 
 # VISPM: Visualisations for Process Mining
