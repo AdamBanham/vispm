@@ -1,5 +1,6 @@
-# Visualisations for Process Mining
 
+![VISPM LOGO](/assets/_logo.png)
+# VISPM: Visualisations for Process Mining
 
 ## What is it?
 This package provides an interface for making exciting visualisations about process mining. Process mining can be a purely technical endeavour at times, and having an easy way to visualise concepts is essential. To encourage others to overcome the technical components of process mining, sometimes having an engaging animation will do just that. A key difference between other data science domains and process mining is that process mining outcomes often will have a visual interpretation that others don’t. We need more ways to emphasise this aspect, and this project is one such way.
