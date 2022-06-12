@@ -21,10 +21,6 @@ Here are a currently supported process mining visualisations:
     - running
     - complex custom templates
 
-This is a simple example package. You can use
-[Github-flavored Markdown](https://guides.github.com/features/mastering-markdown/)
-to write your content.
-
 ## Where to get it 
 
 The source code is currently available on GitHub: https://github.com/AdamBanham/vispm
