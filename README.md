@@ -1,5 +1,8 @@
 
-![VISPM LOGO](/assets/_logo.png)
+<p align="center">
+    <img src="./assets/_logo.png">
+</p>
+
 # VISPM: Visualisations for Process Mining
 
 ## What is it?
