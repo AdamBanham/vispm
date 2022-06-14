@@ -13,7 +13,7 @@ This package provides an interface for making exciting visualisations about proc
 The goal of vispm is to:
 - Have fun and create some cool stuff.
 - Make exciting process mining visualisation that would aspire others.
-- Create a layer interface supporting three levels: quick-easy access, general templates for specific use cases, super customisation via class objects. 
+- Create a layered interface supporting three levels: quick-easy access, general templates for specific use cases, super customisation via class objects. 
 
 ## Main Features
 
