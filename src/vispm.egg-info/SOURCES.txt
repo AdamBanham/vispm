@@ -10,5 +10,16 @@ src/vispm.egg-info/requires.txt
 src/vispm.egg-info/top_level.txt
 src/vispm/animation/__init__.py
 src/vispm/helpers/__init__.py
+src/vispm/helpers/colours/__init__.py
+src/vispm/helpers/colours/colourmaps.py
+src/vispm/helpers/data/__init__.py
+src/vispm/helpers/data/log_data.py
+src/vispm/helpers/handlers/__init__.py
+src/vispm/helpers/handlers/log_runners.py
+src/vispm/helpers/imputers/__init__.py
+src/vispm/helpers/imputers/event_imputers.py
+src/vispm/helpers/metaclasses/__init__.py
+src/vispm/helpers/metaclasses/pm4py.py
 src/vispm/running/__init__.py
 src/vispm/static/__init__.py
+src/vispm/static/dotted.py
