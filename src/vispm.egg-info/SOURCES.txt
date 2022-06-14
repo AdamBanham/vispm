@@ -6,6 +6,7 @@ src/vispm/__init__.py
 src/vispm.egg-info/PKG-INFO
 src/vispm.egg-info/SOURCES.txt
 src/vispm.egg-info/dependency_links.txt
+src/vispm.egg-info/requires.txt
 src/vispm.egg-info/top_level.txt
 src/vispm/animation/__init__.py
 src/vispm/helpers/__init__.py
