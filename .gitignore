@@ -1,2 +1,6 @@
 __pycache__
 **/__pycache__
+
+
+# ignore development files
+test_book.ipynb
