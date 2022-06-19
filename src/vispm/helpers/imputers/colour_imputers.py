@@ -59,6 +59,9 @@ class EventLabelColourer(ColourImputer):
 
 
 class TraceColourer(ColourImputer):
+    """
+    Colours event data by trace identifier or iteratively over traces.
+    """
 
     _cm = get_cmap("Accent")
 
