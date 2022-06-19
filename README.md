@@ -18,16 +18,56 @@ The goal of vispm is to:
 ## Main Features
 
 Here are a currently supported process mining visualisations:
-- Dotted Charts
-    - static
-    - running
-    - complex custom templates
+### Dotted Charts
+    This type of chart is the only visualisation available within the project so far. In this visualisation, we plot events across a time axis and can change the colour of event depending on the type analysis. We current support colouring events via trace or event label but do offer a template for customer colourers.
+#### Static Presentors
+    This section is currently be worked on and is unstable.
+
+    Below is an example of how to generate a dotted chart from an event log. While we do not require that you use pm4py as the importer, we do suggest that you use the library to handle xes or xes.gz files. The StaticDottedChartPresentor has several optional parameters that allow users to change the type of colourer used (trace, event label or custom), figure parameters (dpi, size, markersize) and the colourmap used for colouring. See the doc string for more information.
+
+```
+from vispm import StaticDottedChartPresentor
+from matplotlib import pyplot as plt
+
+# not required but a very helpful and cool library
+from pm4py import read_xes
+
+from os.path import join 
+
+LOG_FILE = join(".","BPI_Challenge_2012.xes.gz")
+
+def main():
+    log = read_xes(LOG_FILE)
+    presentor = StaticDottedChartPresentor(log)
+    presentor.plot()
+    plt.show()
+
+if __name__ == "__main__":
+    main()
+```
+
+    Using this class and a bit of playing around with custom colourers, the following examples can be generated.
+
+<div style="width:100%;display:inline-block">
+    <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_Chart_of_BPI_Challenge_2012.png" style="width:19%">
+    <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_Chart_of_BPI_Challenge_2017.png" style="width:19%">
+    <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_Chart_of_BPI_Challenge_2018.png" style="width:19%">
+    <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_Chart_of_BPI_Challenge_2019.png" style="width:19%">
+</div>
+
+
+#### Running Presentors
+    More on these in upcoming updates.
+#### Complex Template Presentors
+    More on these in upcoming updates.
 
 ## Where to get it 
 
 The source code is currently available on GitHub: https://github.com/AdamBanham/vispm
 
-Installers for the latest released versionsa re available at the Python Package Index (PyPI)
+Installers for the latest released versions are available at the Python Package Index (PyPI): https://pypi.org/project/vispm/
+
+To install the package, use the following command.
 ```
 pip install vispm
 ```
