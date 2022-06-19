@@ -17,7 +17,10 @@ src/vispm/helpers/data/log_data.py
 src/vispm/helpers/handlers/__init__.py
 src/vispm/helpers/handlers/log_runners.py
 src/vispm/helpers/imputers/__init__.py
+src/vispm/helpers/imputers/colour_imputers.py
 src/vispm/helpers/imputers/event_imputers.py
+src/vispm/helpers/iters/__init__.py
+src/vispm/helpers/iters/tools.py
 src/vispm/helpers/metaclasses/__init__.py
 src/vispm/helpers/metaclasses/pm4py.py
 src/vispm/running/__init__.py
