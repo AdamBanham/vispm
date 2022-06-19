@@ -19,11 +19,14 @@ The goal of vispm is to:
 
 Here are a currently supported process mining visualisations:
 ### Dotted Charts
-    This type of chart is the only visualisation available within the project so far. In this visualisation, we plot events across a time axis and can change the colour of event depending on the type analysis. We current support colouring events via trace or event label but do offer a template for customer colourers.
-#### Static Presentors
-    This section is currently be worked on and is unstable.
 
-    Below is an example of how to generate a dotted chart from an event log. While we do not require that you use pm4py as the importer, we do suggest that you use the library to handle xes or xes.gz files. The StaticDottedChartPresentor has several optional parameters that allow users to change the type of colourer used (trace, event label or custom), figure parameters (dpi, size, markersize) and the colourmap used for colouring. See the doc string for more information.
+This type of chart is the only visualisation available within the project so far. In this visualisation, we plot events across a time axis and can change the colour of event depending on the type analysis. We current support colouring events via trace or event label but do offer a template for customer colourers.
+
+#### Static Presentors
+
+This section is currently be worked on and is unstable.
+
+Below is an example of how to generate a dotted chart from an event log. While we do not require that you use pm4py as the importer, we do suggest that you use the library to handle xes or xes.gz files. The StaticDottedChartPresentor has several optional parameters that allow users to change the type of colourer used (trace, event label or custom), figure parameters (dpi, size, markersize) and the colourmap used for colouring. See the doc string for more information.
 
 ```
 from vispm import StaticDottedChartPresentor
