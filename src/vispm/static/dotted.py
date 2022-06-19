@@ -16,6 +16,50 @@ from matplotlib.figure import Figure
 from matplotlib.colors import ListedColormap
 
 class StaticDottedChartPresentor():
+    """
+    Presentor for generating a static dotted chart for a given log. Should be used in a one shot manner.
+
+    Call sequence:
+    ---
+    To use presentor call the following methods:
+    ``` 
+    presentor = StaticDottedChartPresentor(log)
+    presentor.plot()
+    ```
+
+    Parameters:
+    ----
+    event_log:`EventLog`\n
+    [Required] A python object, where sequence behaviour (i.e. log[1:5] returns a list of traces) and mapping behaviour (i.e log["attr"]) return attributes attached to the event log.\n
+    Currently assumes that the given log, is very similar to the pm4py implementation.\n
+    \n
+    dpi:`int=96`\n
+    [Optional] The dpi of the figure, if generating one.\n
+    \n
+    figsize:`Tuple[float,float]=(8,8)`\n
+    [Optional] The size of the figure in inches (WxH), if generating one.\n
+    \n
+    markersize:`float=0.5`\n
+    [Optional] The relevative size of each circle drawn for each event.\n
+    \n
+    ax:`matplotlib.axes.Axes=None`\n
+    [Optional] Instead of generating a figure and axes, use the given axes as is to plot.\n
+    \n
+    starting_time:`datetime.datetime=None`\n
+    [Optional] Instead of inferring the starting time of the event log, use the given timstamp as the starting point for extracting data.\n
+    \n
+    colormap:`matplotlib.colors.ListedColormap=vispm.helpers.colours.colourmaps.CATEGORICAL`\n
+    [Optional] The colourmap to be passed to the colourer, some examples of coloursmaps can be found in vispm.helpers.colours.colourmaps.\n
+    \n
+    event_colour_scheme:`vispm.helpers.imputers.colour_imputers.ColourImputer=StaticDottedChartPresentor.EventColourScheme.Trace`\n
+    [Optional] The colourer to be used for deciding how a event is coloured, will be passed the colourmap at init.\n
+    For ease of use, this parameter can be controlled via a parameter enum, which passes a class to use via `StaticDottedChartPresentor.EventColourScheme`\n
+    For more advance use, a instance of a subclass from ColourImputer can be passed instead.\n
+    \n
+    debug:`bool=True`\n
+    [Optional] Sets whether debug messages are printed as class generates chart.\n
+
+    """
 
     _fig = None
     _ax = None 
@@ -28,7 +72,14 @@ class StaticDottedChartPresentor():
 
     class EventColourScheme(Enum):
         """
-        Parameter Enum for StaticDottedChartPresentor. Sets how events are coloured when plotting.
+        Parameter Enum for event_colour_scheme of StaticDottedChartPresentor. Sets how events are coloured when plotting.
+
+        Selection
+        -----
+        `EventColourScheme.Trace`\n
+        \t Events will be colour via trace identifier.\n
+        `EventColourScheme.EventLabel`\n
+        \t Events will be coloured via event label, in a FIFO manner.
         """
         Trace:ColourImputer=TraceColourer
         EventLabel:ColourImputer=EventLabelColourer    
@@ -59,10 +110,16 @@ class StaticDottedChartPresentor():
         # process event data
         self._debug("Processing event data...")
         self._sequences = self._extractor(event_log, start_time=starting_time)
+        # handle colourer input
         if isinstance(event_colour_scheme, self.EventColourScheme):
             self._colour_schemer = event_colour_scheme(cm=colormap)
         else:
-            self._colour_schemer = event_colour_scheme
+            if issubclass(event_colour_scheme.__class__, ColourImputer):
+                self._colour_schemer = event_colour_scheme
+            else:
+                self._debug(f"Unknown ColourImputer passed, unsafe to continue : passed {event_colour_scheme.__class__.__name__} which is not a subclass of vispm.helpers.imputers.colour_imputers.ColourImputer.")
+                raise AttributeError("Given event colourer is not a subclass of ColourImputer.")
+        #try to find event log name in attributes
         try :
             self._log_name = event_log.attributes['concept:name'] 
         except:
