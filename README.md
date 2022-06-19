@@ -49,20 +49,23 @@ if __name__ == "__main__":
     main()
 ```
 
-    Using this class and a bit of playing around with custom colourers, the following examples can be generated.
+Using this class and a bit of playing around with custom colourers, the following examples can be generated.
 
 <div style="width:100%;display:inline-block">
-    <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_Chart_of_BPI_Challenge_2012.png" style="width:19%">
-    <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_Chart_of_BPI_Challenge_2017.png" style="width:19%">
-    <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_Chart_of_BPI_Challenge_2018.png" style="width:19%">
-    <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_Chart_of_BPI_Challenge_2019.png" style="width:19%">
+    <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_Chart_of_BPI_Challenge_2012.png"  style="width:19%">
+    <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_Chart_of_BPI_Challenge_2017.png"  style="width:19%">
+    <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_Chart_of_BPI_Challenge_2018.png"  style="width:19%">
+    <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_Chart_of_BPI_Challenge_2019.png"  style="width:19%">
 </div>
 
 
 #### Running Presentors
-    More on these in upcoming updates.
+
+More on these in upcoming updates.
+
 #### Complex Template Presentors
-    More on these in upcoming updates.
+
+More on these in upcoming updates.
 
 ## Where to get it 
 
