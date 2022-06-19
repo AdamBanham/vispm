@@ -28,7 +28,7 @@ This section is currently being worked on and is unstable.
 
 Below is an example of generating a dotted chart from an event log. While we do not require that you use pm4py as the importer, we suggest you use the library to handle xes or xes.gz files. The StaticDottedChartPresentor has several optional parameters that allow users to change the type of colourer used (trace, event label or custom), figure parameters (dpi, size, markersize) and the colourmap used for colouring. See the doc string for more information.
 
-```
+```python
 from vispm import StaticDottedChartPresentor
 from matplotlib import pyplot as plt
 
