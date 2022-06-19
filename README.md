@@ -52,10 +52,10 @@ if __name__ == "__main__":
 Below are some examples of using this class and playing around with custom colourers.
 
 <div style="width:100%;display:inline-block">
-    <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_Chart_of_BPI_Challenge_2012.png"  style="width:19%" alt="Dotted Chart for BPIC 2012">
-    <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_Chart_of_BPI_Challenge_2017.png"  style="width:19%" alt="Dotted Chart for BPIC 2017">
-    <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_Chart_of_BPI_Challenge_2018.png"  style="width:19%" alt="Dotted Chart for BPIC 2018">
-    <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_Chart_of_BPI_Challenge_2019.png"  style="width:19%" alt="Dotted Chart for BPIC 2019">
+    <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_Chart_of_BPI_Challenge_2012.png"  style="width:48%" alt="Dotted Chart for BPIC 2012">
+    <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_Chart_of_BPI_Challenge_2017.png"  style="width:48%" alt="Dotted Chart for BPIC 2017">
+    <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_Chart_of_BPI_Challenge_2018.png"  style="width:48%" alt="Dotted Chart for BPIC 2018">
+    <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_Chart_of_BPI_Challenge_2019.png"  style="width:48%" alt="Dotted Chart for BPIC 2019">
 </div>
 
 
