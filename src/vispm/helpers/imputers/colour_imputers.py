@@ -85,6 +85,31 @@ class TraceColourer(ColourImputer):
             self._loop_back_counter = 25
 
 
+class SequenceBreakerColourer(ColourImputer):
+    """
+    Changes the colourmap used for a given colourer, depending on time of the event being coloured. 
+    """
+
+    def __init__(self, type:ColourImputer=EventLabelColourer, colormaps=List, intervals=List[Tuple[float,float]]) -> None:
+        self._type = type 
+        assert len(colormaps) == len(intervals)
+        self._intervals = intervals 
+        self._colormaps = colormaps
+
+    def __call__(self, trace_id:int, seq_data:List[SequenceData], *args, **kwags) -> Tuple[float,float,float,float]:
+        colours = []
+        for seq in seq_data:
+            time = seq.time
+            for (min,max),map in zip(self._intervals,self._colormaps):
+                if time >= min and time < max:
+                    self._type._set_cm(map)
+                    break
+            c_return = self._type(trace_id=trace_id, seq_data=[seq], *args, **kwags)
+            if isinstance(c_return, list):
+                colours = colours + c_return
+            else:
+                colours.append(c_return)
+        return colours
 
     def _set_cm(self, cm):
         self._cm = cm
