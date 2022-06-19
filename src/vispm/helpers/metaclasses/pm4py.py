@@ -11,7 +11,7 @@ class Event(Mapping):
     def __init__(self) -> None:
         super().__init__()
 
-class Trace(Sequence):
+class Trace(Mapping,Sequence):
     """
     Dummy placeholder for pm4py.objects.log.obj.Trace\n
 
