@@ -63,15 +63,28 @@ class TraceColourer(ColourImputer):
     Colours event data by trace identifier or iteratively over traces.
     """
 
-    _cm = get_cmap("Accent")
 
     def __init__(self,cm=None) -> None:
-         if cm != None:
+        self._cm = CATEGORICAL
+        self._loop_back_counter = 25
+        
+        if cm != None:
             self._cm = cm 
+        if hasattr(self._cm, 'colors'):
+            self._loop_back_counter = len(self._cm.colors)
 
-    def __call__(self, trace_id:int, *args, **kwags) -> Tuple[float,float,float,float]:
-        color = self._cm(trace_id % len(self._cm.colors) / len(self._cm.colors))
-        return color
+    def __call__(self, trace_id:int, seq_data:List[SequenceData], *args, **kwags) -> Tuple[float,float,float,float]:
+        color = self._cm( (trace_id % self._loop_back_counter)/self._loop_back_counter)
+        return [color for _ in range(len(seq_data))]
+
+    def _set_cm(self, cm):
+        self._cm = cm
+        if hasattr(self._cm, 'colors'):
+            self._loop_back_counter = len(self._cm.colors)
+        else: 
+            self._loop_back_counter = 25
+
+
 
     def _set_cm(self, cm):
         self._cm = cm
