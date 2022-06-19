@@ -1,13 +1,15 @@
 
-from typing import Tuple
+from typing import Tuple,Any,List
 from abc import ABC,abstractmethod
 
-from matplotlib.cm import get_cmap
+from vispm.helpers.colours.colourmaps import CATEGORICAL
+
+from vispm.helpers.data.log_data import SequenceData
 
 class ColourImputer(ABC):
 
     @abstractmethod
-    def __call__(self, *args: Any, **kwds: Any) -> Any:
+    def __call__(self, *args:Any, **kwds: Any) -> Any:
         pass
 
     @abstractmethod
