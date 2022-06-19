@@ -8,7 +8,7 @@
 A python library for creating visualisations related to process mining, all graphs are generated using [matplotlib](https://pypi.org/project/matplotlib/).
 
 ## What is it?
-This package provides an interface for making exciting visualisations about process mining. Process mining can be a purely technical endeavour at times, and having an easy way to visualise concepts is essential. To encourage others to overcome the technical components of process mining, sometimes having an engaging animation will do just that. A key difference between other data science domains and process mining is that process mining outcomes often will have a visual interpretation that others don’t. We need more ways to emphasise this aspect, and this project is one such way.
+This package provides an interface for making exciting visualisations about process mining. Process mining can be a purely technical endeavour at times, and having an easy way to visualise concepts is essential. To encourage others to overcome the technical components of process mining, sometimes having an engaging animation will do just that. A key difference between other data science domains and process mining, is that process mining outcomes often will have a visual interpretation that others don’t. We need more ways to emphasise this aspect, and this project is one such way.
 
 The goal of vispm is to:
 - Have fun and create some cool stuff.
@@ -17,16 +17,16 @@ The goal of vispm is to:
 
 ## Main Features
 
-Here are a currently supported process mining visualisations:
+Here is a list of supported process mining visualisations:
 ### Dotted Charts
 
-This type of chart is the only visualisation available within the project so far. In this visualisation, we plot events across a time axis and can change the colour of event depending on the type analysis. We current support colouring events via trace or event label but do offer a template for customer colourers.
+This chart is the only visualisation available within the project so far. In this visualisation, we plot events across a time axis, and we can change how events are coloured depending on the type analysis. We currently support colouring events via trace or event label but offer a template for customer colourers.
 
 #### Static Presentors
 
-This section is currently be worked on and is unstable.
+This section is currently being worked on and is unstable.
 
-Below is an example of how to generate a dotted chart from an event log. While we do not require that you use pm4py as the importer, we do suggest that you use the library to handle xes or xes.gz files. The StaticDottedChartPresentor has several optional parameters that allow users to change the type of colourer used (trace, event label or custom), figure parameters (dpi, size, markersize) and the colourmap used for colouring. See the doc string for more information.
+Below is an example of generating a dotted chart from an event log. While we do not require that you use pm4py as the importer, we suggest you use the library to handle xes or xes.gz files. The StaticDottedChartPresentor has several optional parameters that allow users to change the type of colourer used (trace, event label or custom), figure parameters (dpi, size, markersize) and the colourmap used for colouring. See the doc string for more information.
 
 ```
 from vispm import StaticDottedChartPresentor
@@ -49,7 +49,7 @@ if __name__ == "__main__":
     main()
 ```
 
-Using this class and a bit of playing around with custom colourers, the following examples can be generated.
+Below are some examples of using this class and playing around with custom colourers.
 
 <div style="width:100%;display:inline-block">
     <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_Chart_of_BPI_Challenge_2012.png"  style="width:19%">
