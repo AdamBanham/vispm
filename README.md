@@ -58,6 +58,34 @@ Below are some examples of using this class and playing around with custom colou
     <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_Chart_of_BPI_Challenge_2019.png"  style="width:48%" alt="Dotted Chart for BPIC 2019">
 </div>
 
+##### Extensions
+
+Below are some examples of extensions that can be added to this extension before ploting.
+
+###### DottedColourHistogramExtension
+
+This extension plots a histogram based on the events within a dotted chart. Events will be broken down by colour for each bin.
+
+```python
+presentor = StaticDottedChartPresentor(log,dpi=100,
+    event_colour_scheme=StaticDottedChartPresentor.EventColourScheme.EventLabel,
+    colormap=HIGH_CONTRAST_WARM
+)
+ext = DottedColourHistogramExtension(direction=DottedColourHistogramExtension.Direction.NORTH)
+presentor.add_extension(ext)
+ext = DottedColourHistogramExtension(direction=DottedColourHistogramExtension.Direction.SOUTH,
+         plot_axes=DottedColourHistogramExtension.PlotAxes.X)
+presentor.add_extension(ext)
+ext = DottedColourHistogramExtension(direction=DottedColourHistogramExtension.Direction.WEST)
+presentor.add_extension(ext)
+ext = DottedColourHistogramExtension(direction=DottedColourHistogramExtension.Direction.EAST,
+         plot_axes=DottedColourHistogramExtension.PlotAxes.X)
+presentor.add_extension(ext)
+presentor.plot()
+```
+
+(assets/Dotted_Chart_Histogram.png)[Example of extension]
+
 
 #### Running Presentors
 
