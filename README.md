@@ -84,7 +84,9 @@ presentor.add_extension(ext)
 presentor.plot()
 ```
 
-![example of extension](assets/Dotted_Chart_Histogram.png)
+<div style="width:100%;display:inline-block">
+    <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_Chart_Histogram.png" alt="Dotted Chart with Colour Histogram">
+</div>
 
 
 #### Running Presentors
