@@ -85,7 +85,7 @@ presentor.plot()
 ```
 
 <div style="width:100%;display:inline-block">
-    <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_Chart_Histogram.png" alt="Dotted Chart with Colour Histogram">
+    <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_Chart_Histogram.png" alt="Dotted Chart with Colour Histogram" style="transform: scale(0.5)">
 </div>
 
 
