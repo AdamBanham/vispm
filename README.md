@@ -67,6 +67,8 @@ Below are some examples of extensions that can be added to this extension before
 This extension plots a histogram based on the events within a dotted chart. Events will be broken down by colour for each bin.
 
 ```python
+from vispm import StaticDottedChartPresentor,DottedColourHistogramExtension
+
 presentor = StaticDottedChartPresentor(log,dpi=100,
     event_colour_scheme=StaticDottedChartPresentor.EventColourScheme.EventLabel,
     colormap=HIGH_CONTRAST_WARM
@@ -82,6 +84,7 @@ ext = DottedColourHistogramExtension(direction=DottedColourHistogramExtension.Di
          plot_axes=DottedColourHistogramExtension.PlotAxes.X)
 presentor.add_extension(ext)
 presentor.plot()
+
 ```
 
 <div style="width:100%;display:inline-block">
