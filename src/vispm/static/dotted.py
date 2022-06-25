@@ -5,8 +5,10 @@ from ..helpers.handlers.log_runners import SequenceDataExtractor
 from ..helpers.imputers.colour_imputers import ColourImputer, TraceColourer, EventLabelColourer
 from ..helpers.colours.colourmaps import CATEGORICAL
 from ..helpers.iters.tools import iter_chunker
+from ..extensions._base import ChartExtension
+from ._base import StaticPresentor
 
-from typing import List,Tuple
+from typing import List, Tuple, Any
 from math import ceil, floor
 
 from matplotlib import pyplot as plt
@@ -15,7 +17,9 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.colors import ListedColormap
 
-class StaticDottedChartPresentor():
+PLOT_STATE = ChartExtension.UpdateState
+
+class StaticDottedChartPresentor(StaticPresentor):
     """
     Presentor for generating a static dotted chart for a given log. Should be used in a one shot manner.
 
@@ -57,7 +61,7 @@ class StaticDottedChartPresentor():
     For more advance use, a instance of a subclass from ColourImputer can be passed instead.\n
     \n
     debug:`bool=True`\n
-    [Optional] Sets whether debug messages are printed as class generates chart.\n
+    [Optional] Sets whether debug messages are printed.\n
 
     """
 
@@ -92,15 +96,15 @@ class StaticDottedChartPresentor():
         markersize:float=0.5, starting_time=None,
         colormap:ListedColormap=CATEGORICAL,debug:bool=True,
         event_colour_scheme:EventColourScheme=EventColourScheme.Trace) -> None:
+        super().__init__(debug=debug)
         # set default values
-        self._show_debug = debug
         self._marksize = markersize
         # so turns out its painful to not show a figure and still show it when needed.
         reset_it = plt.isinteractive()
         if reset_it:
             plt.ioff()
         if ax == None:
-            self._fig = plt.figure(figsize=figsize,dpi=dpi,)
+            self._fig = plt.figure(figsize=figsize,dpi=dpi,constrained_layout=True)
             self._ax = self._fig.subplots(1,1)
         else:
             self._fig = ax.get_figure()
@@ -126,13 +130,13 @@ class StaticDottedChartPresentor():
             self._debug("Cannot find concept:name in eventlog attributes.")
         self._debug("Ready to plot...")
 
-    def _debug(self, message:str, end="\n"):
-        if self._show_debug:
-            print(f"[{self.__class__.__name__}] {message} ",end=end)
+
 
     def _create_dotted_frame(self,sequences:List[List[SequenceData]], ax:Axes) -> List[Artist]:
+        self.update_plot_state(PLOT_STATE.PLOTTING)
         self._debug("Compiling plot data...             ", end="\r")
         all_artists = []
+        # preallocate mem space for speed
         x_data = [  0.0 for trace in sequences for ev in trace ]
         y_data = [ 0.0 for trace in sequences for ev in trace]
         colors = [ (0.0,0.0,0.0,0.0) for trace in sequences for ev in trace ]
@@ -152,6 +156,7 @@ class StaticDottedChartPresentor():
         # plot markers
         self._debug("Compiling finished...        ")
         self._debug("Plotting data...")
+        self.update_extensions(x_data=x_data, y_data=y_data, colors=colors, colour_imputer=self._colour_schemer)
         for xers,yers,cers in zip(iter_chunker(x_data,500),iter_chunker(y_data,500),iter_chunker(colors,500)):
             artists = ax.scatter(
                 x=xers,
@@ -164,6 +169,9 @@ class StaticDottedChartPresentor():
         return all_artists
 
     def plot(self) -> Figure:
+        self._ax = self._adjust_for_extensions(self._fig)
+        self.update_plot_state(PLOT_STATE.DRAWING)
+        self.update_extensions(sequences=self._sequences)
         self._create_dotted_frame(self._sequences,self._ax)
         self._debug("Cleaning up plot...")
         #clean up plot
