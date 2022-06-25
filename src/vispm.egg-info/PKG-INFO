@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: vispm
-Version: 0.0.3
+Version: 0.0.4
 Summary: A visulisation package for process mining activties
 Home-page: https://github.com/AdamBanham/vispm
 Author: Adam
@@ -72,6 +72,39 @@ Below are some examples of using this class and playing around with custom colou
     <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_Chart_of_BPI_Challenge_2017.png"  style="width:48%" alt="Dotted Chart for BPIC 2017">
     <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_Chart_of_BPI_Challenge_2018.png"  style="width:48%" alt="Dotted Chart for BPIC 2018">
     <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_Chart_of_BPI_Challenge_2019.png"  style="width:48%" alt="Dotted Chart for BPIC 2019">
+</div>
+
+##### Extensions
+
+Below are some examples of extensions that can be added to this extension before ploting.
+
+###### DottedColourHistogramExtension
+
+This extension plots a histogram based on the events within a dotted chart. Events will be broken down by colour for each bin.
+
+```python
+from vispm import StaticDottedChartPresentor,DottedColourHistogramExtension
+
+presentor = StaticDottedChartPresentor(log,dpi=100,
+    event_colour_scheme=StaticDottedChartPresentor.EventColourScheme.EventLabel,
+    colormap=HIGH_CONTRAST_WARM
+)
+ext = DottedColourHistogramExtension(direction=DottedColourHistogramExtension.Direction.NORTH)
+presentor.add_extension(ext)
+ext = DottedColourHistogramExtension(direction=DottedColourHistogramExtension.Direction.SOUTH,
+         plot_axes=DottedColourHistogramExtension.PlotAxes.X)
+presentor.add_extension(ext)
+ext = DottedColourHistogramExtension(direction=DottedColourHistogramExtension.Direction.WEST)
+presentor.add_extension(ext)
+ext = DottedColourHistogramExtension(direction=DottedColourHistogramExtension.Direction.EAST,
+         plot_axes=DottedColourHistogramExtension.PlotAxes.X)
+presentor.add_extension(ext)
+presentor.plot()
+
+```
+
+<div style="width:100%;display:inline-block">
+    <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_Chart_Histogram.png" alt="Dotted Chart with Colour Histogram" style="transform: scale(0.5)">
 </div>
 
 

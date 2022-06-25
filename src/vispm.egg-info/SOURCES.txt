@@ -9,6 +9,10 @@ src/vispm.egg-info/dependency_links.txt
 src/vispm.egg-info/requires.txt
 src/vispm.egg-info/top_level.txt
 src/vispm/animation/__init__.py
+src/vispm/extensions/__init__.py
+src/vispm/extensions/_base.py
+src/vispm/extensions/dotted/__init__.py
+src/vispm/extensions/dotted/colour_histogram.py
 src/vispm/helpers/__init__.py
 src/vispm/helpers/colours/__init__.py
 src/vispm/helpers/colours/colourmaps.py
@@ -23,6 +27,8 @@ src/vispm/helpers/iters/__init__.py
 src/vispm/helpers/iters/tools.py
 src/vispm/helpers/metaclasses/__init__.py
 src/vispm/helpers/metaclasses/pm4py.py
+src/vispm/helpers/metaclasses/vispm.py
 src/vispm/running/__init__.py
 src/vispm/static/__init__.py
+src/vispm/static/_base.py
 src/vispm/static/dotted.py
