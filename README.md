@@ -84,7 +84,7 @@ presentor.add_extension(ext)
 presentor.plot()
 ```
 
-(assets/Dotted_Chart_Histogram.png)[Example of extension]
+![example of extension](assets/Dotted_Chart_Histogram.png)
 
 
 #### Running Presentors
