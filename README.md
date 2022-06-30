@@ -74,12 +74,12 @@ presentor = StaticDottedChartPresentor(log,dpi=100,
 ext = DottedColourHistogramExtension(direction=DottedColourHistogramExtension.Direction.NORTH)
 presentor.add_extension(ext)
 ext = DottedColourHistogramExtension(direction=DottedColourHistogramExtension.Direction.SOUTH,
-         plot_axes=DottedColourHistogramExtension.PlotAxes.X)
+         bin_axes=DottedColourHistogramExtension.PlotAxes.X)
 presentor.add_extension(ext)
 ext = DottedColourHistogramExtension(direction=DottedColourHistogramExtension.Direction.WEST)
 presentor.add_extension(ext)
 ext = DottedColourHistogramExtension(direction=DottedColourHistogramExtension.Direction.EAST,
-         plot_axes=DottedColourHistogramExtension.PlotAxes.X)
+         bin_axes=DottedColourHistogramExtension.PlotAxes.X)
 presentor.add_extension(ext)
 presentor.plot()
 
