@@ -1,5 +1,5 @@
 
-from typing import Tuple,Any,List
+from typing import Set, Tuple,Any,List
 from abc import ABC,abstractmethod
 
 from vispm.helpers.colours.colourmaps import CATEGORICAL
@@ -16,6 +16,10 @@ class ColourImputer(ABC):
     def _set_cm(self,cm):
         pass
 
+    @abstractmethod
+    def get_seen_order(self) -> Set[Any]:
+        pass
+
 class EventLabelColourer(ColourImputer):
     """
     Colours event data by event label, will return the same colour for each label.\n
@@ -26,6 +30,7 @@ class EventLabelColourer(ColourImputer):
         self._cm = CATEGORICAL
         self._loop_back_counter = 25
         self._seen_labels = dict()
+        self._seen_order = list()
         self._counter = 0
 
         if cm != None:
@@ -44,8 +49,11 @@ class EventLabelColourer(ColourImputer):
             return self._query_colour(self._seen_labels[data.label])
         else:
             self._seen_labels[data.label] = self._counter
+            c = self._query_colour(self._counter)
+            if c not in self._seen_order:
+                self._seen_order.append(c)
             self._counter += 1
-            return self._query_colour(self._seen_labels[data.label])
+            return c
 
     def _query_colour(self, color_id:int) -> Tuple[float,float,float,float]:
         return self._cm( (color_id % self._loop_back_counter)/self._loop_back_counter)
@@ -57,6 +65,9 @@ class EventLabelColourer(ColourImputer):
         else: 
             self._loop_back_counter = 25
 
+    def get_seen_order(self) -> List[Tuple[float,float,float,float]]:
+        return self._seen_order
+
 
 class TraceColourer(ColourImputer):
     """
@@ -67,6 +78,7 @@ class TraceColourer(ColourImputer):
     def __init__(self,cm=None) -> None:
         self._cm = CATEGORICAL
         self._loop_back_counter = 25
+        self._seen_order = list()
         
         if cm != None:
             self._cm = cm 
@@ -75,6 +87,8 @@ class TraceColourer(ColourImputer):
 
     def __call__(self, trace_id:int, seq_data:List[SequenceData], *args, **kwags) -> Tuple[float,float,float,float]:
         color = self._cm( (trace_id % self._loop_back_counter)/self._loop_back_counter)
+        if color not in self._seen_order:
+            self._seen_order.append(color)
         return [color for _ in range(len(seq_data))]
 
     def _set_cm(self, cm):
@@ -83,6 +97,9 @@ class TraceColourer(ColourImputer):
             self._loop_back_counter = len(self._cm.colors)
         else: 
             self._loop_back_counter = 25
+
+    def get_seen_order(self) -> List:
+        return self._seen_order
 
 
 class SequenceBreakerColourer(ColourImputer):
@@ -95,6 +112,7 @@ class SequenceBreakerColourer(ColourImputer):
         assert len(colormaps) == len(intervals)
         self._intervals = intervals 
         self._colormaps = colormaps
+        self._seen_order = list()
 
     def __call__(self, trace_id:int, seq_data:List[SequenceData], *args, **kwags) -> Tuple[float,float,float,float]:
         colours = []
@@ -105,6 +123,7 @@ class SequenceBreakerColourer(ColourImputer):
                     self._type._set_cm(map)
                     break
             c_return = self._type(trace_id=trace_id, seq_data=[seq], *args, **kwags)
+            self._seen_order = self._seen_order + [c for c  in set(c_return) if c not in self._seen_order]
             if isinstance(c_return, list):
                 colours = colours + c_return
             else:
@@ -113,3 +132,6 @@ class SequenceBreakerColourer(ColourImputer):
 
     def _set_cm(self, cm):
         self._cm = cm
+
+    def get_seen_order(self) -> List[Tuple[float,float,float,float]]:
+        return self._seen_order
