@@ -54,8 +54,6 @@ Below are some examples of using this class and playing around with custom colou
 <div style="width:100%;display:inline-block">
     <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_Chart_of_BPI_Challenge_2012.png"  style="width:48%" alt="Dotted Chart for BPIC 2012">
     <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_Chart_of_BPI_Challenge_2017.png"  style="width:48%" alt="Dotted Chart for BPIC 2017">
-    <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_Chart_of_BPI_Challenge_2018.png"  style="width:48%" alt="Dotted Chart for BPIC 2018">
-    <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_Chart_of_BPI_Challenge_2019.png"  style="width:48%" alt="Dotted Chart for BPIC 2019">
 </div>
 
 ##### Extensions
@@ -89,6 +87,7 @@ presentor.plot()
 
 <div style="width:100%;display:inline-block">
     <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_Chart_Histogram.png" alt="Dotted Chart with Colour Histogram" style="transform: scale(0.5)">
+    <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_Chart_Histogram_2.png" alt="Dotted Chart with Colour Histogram" style="transform: scale(0.5)">
 </div>
 
 
