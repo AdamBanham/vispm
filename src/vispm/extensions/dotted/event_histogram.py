@@ -229,7 +229,7 @@ class DottedEventHistogramExtension(ChartExtension):
                 self._axes.set_xlim([min_x,max_x])
         else:
             portion = (max_x - min_x) / 8.0
-            ticks = [min_x] + [np.floor((min_x + (i*portion))) for i in range(1,8)] + [max_x]
+            ticks = [min_x] + [int(np.floor((min_x + (i*portion)))) for i in range(1,8)] + [max_x]
             if orientation == 'horizontal':
                 self._axes.set_ylim([min_x,max_x]) 
                 self._axes.set_yticks(ticks)
