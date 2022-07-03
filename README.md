@@ -95,7 +95,8 @@ This extension plots a histogram based on the events within a dotted chart. Even
 
 1. setup up colour schemes to use
 ```python
-from vispm.helpers.colours.colourmaps import HIGH_CONTRAST_COOL,HIGH_CONTRAST_WARM,EARTH,COOL_WINTER,CATEGORICAL
+from vispm.helpers.colours.colourmaps import HIGH_CONTRAST_COOL,HIGH_CONTRAST_WARM
+from vispm.helpers.colours.colourmaps import EARTH,COOL_WINTER,
 
 import numpy as np
 from matplotlib.colors import ListedColormap
