@@ -156,7 +156,7 @@ class StaticDottedChartPresentor(StaticPresentor):
         # plot markers
         self._debug("Compiling finished...        ")
         self._debug("Plotting data...")
-        self.update_extensions(x_data=x_data, y_data=y_data, colors=colors, colour_imputer=self._colour_schemer)
+        self.update_extensions(x_data=x_data, y_data=y_data, colors=colors, colour_imputer=self._colour_schemer,sequences=sequences)
         for xers,yers,cers in zip(iter_chunker(x_data,500),iter_chunker(y_data,500),iter_chunker(colors,500)):
             artists = ax.scatter(
                 x=xers,
