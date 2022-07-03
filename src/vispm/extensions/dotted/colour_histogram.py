@@ -1,5 +1,3 @@
-
-from matplotlib.axis import Axis
 from .._base import ChartExtension
 from ...helpers.metaclasses.vispm import Presentor
 from ...static.dotted import StaticDottedChartPresentor
@@ -11,12 +9,12 @@ from enum import Enum, auto
 import numpy as np
 
 from matplotlib.axes import Axes
-from matplotlib.transforms import Affine2D
+from matplotlib.colors import Colormap
 
 
 class DottedColourHistogramExtension(ChartExtension):
     """
-    Adds a histogram showing the density of a given colour per segement of the choosen axis.\n
+    Adds a histogram showing the density of a given colour per segment of the choosen axis.\n
 
     Call Sequence:
     ----
@@ -31,7 +29,7 @@ class DottedColourHistogramExtension(ChartExtension):
     direction:`ChartExtension.Direction`\n
     [Optional] Sets what direction to build axes in for extension \n
     \n
-    bin_axes:`DottedColourHistogramExtension.PlotAxes=PlotAxes.X"\n
+    bin_axes:`DottedColourHistogramExtension.PlotAxes=PlotAxes.X`\n
     [Optional] Sets what axes to use to generate bins. X will use the relative timestamp from start of event log, while Y will use the trace number. 
     \n
     debug:`bool=True`\n
@@ -48,6 +46,7 @@ class DottedColourHistogramExtension(ChartExtension):
     def __init__(self, 
         direction:ChartExtension.Direction=ChartExtension.Direction.SOUTH, 
         bin_axes:PlotAxes=PlotAxes.Y,
+        colourmap:Colormap=None,
         debug: bool = True) -> None:
         super().__init__(debug)
         # setup 
@@ -55,6 +54,7 @@ class DottedColourHistogramExtension(ChartExtension):
         self._bin_axes = bin_axes
         self._axes = None
         self._size = (1.0,1.0)
+        self._colormap = colourmap
 
     def compatable_with(self, presentor:Presentor) -> bool:
         return self._compatable is presentor.__class__
@@ -133,14 +133,14 @@ class DottedColourHistogramExtension(ChartExtension):
                 self._axes.set_yticks([0, count_mid, count_max])
                 self._axes.set_ylim(0, count_max)
         
+        min_x = min(plot_axis)
+        max_x = max(plot_axis)
         # adjust xticks for timestamp
         if  self._bin_axes == self.PlotAxes.X:
             if orientation == 'horizontal':
-                min_x = min(plot_axis)
-                max_x = max(plot_axis)
                 portion = (max_x - min_x) / 8.0
                 suffix, scale = self._find_scale(max_x - min_x)
-                ticks = [min_x] + [min_x + (i*portion) for i in range(8)] + [max_x]
+                ticks = [min_x] + [min_x + (i*portion) for i in range(1,8)] + [max_x]
                 self._axes.set_yticks(ticks)
                 self._axes.set_yticklabels(
                     [ 
@@ -148,15 +148,14 @@ class DottedColourHistogramExtension(ChartExtension):
                         for tick 
                         in ticks
                     ],
-                    rotation=-45
+                    rotation=-13,
+                    fontdict={'fontsize' : 6}
                 )
                 self._axes.set_ylim([min_x,max_x])
             else :
-                min_x = min(plot_axis)
-                max_x = max(plot_axis)
                 portion = (max_x - min_x) / 8.0
                 suffix, scale = self._find_scale(max_x - min_x)
-                ticks = [min_x] + [(min_x + (i*portion)) for i in range(8)] + [max_x]
+                ticks = [min_x] + [(min_x + (i*portion)) for i in range(1,8)] + [max_x]
                 self._axes.set_xticks(ticks)
                 self._axes.set_xticklabels(
                     [ 
@@ -164,10 +163,30 @@ class DottedColourHistogramExtension(ChartExtension):
                         for tick 
                         in ticks
                     ],
-                    rotation=-45
+                    rotation=-13,
+                    fontdict={'fontsize' : 6}
                 )    
                 self._axes.set_xlim([min_x,max_x])
+        else:
+            portion = (max_x - min_x) / 8.0
+            ticks = [min_x] + [np.floor((min_x + (i*portion))) for i in range(1,8)] + [max_x]
+            if orientation == 'horizontal':
+                self._axes.set_ylim([min_x,max_x]) 
+                self._axes.set_yticks(ticks)
+                self._axes.set_yticklabels(
+                    ticks,
+                    rotation=-13,
+                    fontdict={'fontsize' : 6}
+                )    
+            else:
+                self._axes.set_xlim([min_x,max_x])
+                self._axes.set_xticks(ticks)
+                self._axes.set_xticklabels(
+                    ticks,
+                    rotation=-13,
+                    fontdict={'fontsize' : 6}
+                )    
 
         # clean up axes
-        
         self._axes.set_frame_on(False)
+        return self._axes
