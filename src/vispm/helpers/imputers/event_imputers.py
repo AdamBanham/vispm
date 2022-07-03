@@ -64,6 +64,7 @@ class EventLabelImputer():
                 self._curr = 0
             self._num_lookup[label] = self._num 
             self._num += 1
+            return True
 
     def get_label_num(self, label:str) -> int:
         if label in self._num_lookup.keys():
