@@ -69,7 +69,7 @@ from vispm import StaticDottedChartPresentor,DottedColourHistogramExtension
 
 presentor = StaticDottedChartPresentor(log,dpi=100,
     event_colour_scheme=StaticDottedChartPresentor.EventColourScheme.EventLabel,
-    colormap=HIGH_CONTRAST_WARM
+    colormap=HIGH_CONTRAST_COOL
 )
 ext = DottedColourHistogramExtension(direction=DottedColourHistogramExtension.Direction.NORTH)
 presentor.add_extension(ext)
@@ -82,14 +82,70 @@ ext = DottedColourHistogramExtension(direction=DottedColourHistogramExtension.Di
          bin_axes=DottedColourHistogramExtension.PlotAxes.X)
 presentor.add_extension(ext)
 presentor.plot()
-
 ```
 
 <div style="width:100%;display:inline-block">
-    <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_Chart_Histogram.png" alt="Dotted Chart with Colour Histogram" style="transform: scale(0.5);width: 48%">
-    <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_Chart_Histogram_2.png" alt="Dotted Chart with Colour Histogram" style="transform: scale(0.5);width: 48%">
+    <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_ext_clrhist.png" alt="Dotted Chart with Colour Histogram" style="transform: scale(0.5);width: 48%">
+    <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_ext_clrhist_2.png" alt="Dotted Chart with Colour Histogram" style="transform: scale(0.5);width: 48%">
 </div>
 
+###### DottedEventHistogramExtension
+
+This extension plots a histogram based on the events within a dotted chart. Events will be broken down by the label for each event in each bin. This extension uses a colour imputer that is independent of the graph, meaning different colour schemes can be used for each extension.
+
+1. setup up colour schemes to use
+```python
+colourmaps = [COOL_WINTER,EARTH,HIGH_CONTRAST_COOL,HIGH_CONTRAST_WARM]
+seq_colourmap = np.vstack(
+    (
+    colourmaps[0](np.linspace(0.20,1,8)),
+    colourmaps[1](np.linspace(0.20,1,8)),
+    colourmaps[2](np.linspace(0.20,1,8)),
+    colourmaps[3](np.linspace(0.20,1,8))
+    )
+)
+seq_colourmap = ListedColormap(seq_colourmap, name='VARIANCE')
+cmap = get_cmap(HIGH_CONTRAST_COOL, 26)
+```
+
+2. create a presentor and add extensions
+```python
+presentor = StaticDottedChartPresentor(log,dpi=100,
+    event_colour_scheme=StaticDottedChartPresentor.EventColourScheme.EventLabel,
+    colormap=cmap
+)
+
+ext = DottedEventHistogramExtension(
+    direction=DottedEventHistogramExtension.Direction.SOUTH,
+    bin_axes=DottedEventHistogramExtension.PlotAxes.X,
+    colourmap=seq_colourmap
+)
+presentor.add_extension(ext)
+ext = DottedEventHistogramExtension(
+    direction=DottedEventHistogramExtension.Direction.NORTH,
+    bin_axes=DottedEventHistogramExtension.PlotAxes.Y,
+    colourmap=seq_colourmap
+)
+presentor.add_extension(ext)
+ext = DottedEventHistogramExtension(
+    direction=DottedEventHistogramExtension.Direction.WEST,
+    bin_axes=DottedEventHistogramExtension.PlotAxes.Y,
+    colourmap=cmap
+)
+presentor.add_extension(ext)
+ext = DottedEventHistogramExtension(
+    direction=DottedEventHistogramExtension.Direction.EAST,
+    bin_axes=DottedEventHistogramExtension.PlotAxes.X,
+    colourmap=cmap
+)
+presentor.add_extension(ext)
+
+presentor.plot()
+```
+
+<div style="width:100%;display:inline-block">
+    <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_ext_evhist.png" alt="Dotted Chart with Event Histogram" style="transform: scale(0.5);width: 48%">
+</div>
 
 #### Running Presentors
 
