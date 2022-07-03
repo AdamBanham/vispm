@@ -1,12 +1,12 @@
 from matplotlib.cm import get_cmap
-from matplotlib.colors import ListedColormap
+from matplotlib.colors import ListedColormap,Colormap
 
 import numpy as np
 
 CATEGORICAL = get_cmap("Accent")
-HIGH_CONTRAST_COOL = get_cmap("viridis", 25)
-HIGH_CONTRAST_WARM = get_cmap("plasma", 25)
-COOL_WINTER = get_cmap("YlGnBu")
+HIGH_CONTRAST_COOL = get_cmap("viridis", 26)
+HIGH_CONTRAST_WARM = get_cmap("plasma", 26)
+COOL_WINTER = get_cmap("YlGnBu",26)
 
 earth_top = get_cmap('Greens', 25)
 earth_bottom = get_cmap('copper', 100)
