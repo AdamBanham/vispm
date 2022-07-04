@@ -13,7 +13,7 @@ import numpy as np
 
 from matplotlib.axes import Axes
 from matplotlib.cm import get_cmap, ScalarMappable
-from matplotlib.colors import Colormap
+from matplotlib.colors import Colormap,ListedColormap,Normalize
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 DEFAULT_COLORMAP = get_cmap('rainbow')
@@ -148,17 +148,13 @@ class DottedEventHistogramExtension(ChartExtension):
             cbar_orientation = 'vertical'
             cax = divider.append_axes('right', size='10%', pad=0.2)
         
-
+        # add colourbar to axes
         tickers = list(range(0,len(seen_activities)))
-        cbar = self._axes.get_figure().colorbar(ScalarMappable(cmap=self._colourer._cm), ticks=tickers, orientation=cbar_orientation, cax=cax)
-        tickers = [ t/len(tickers)+(0.5/len(tickers)) for t in tickers ]
-        if cbar_orientation == 'horizontal':
-            cbar.ax.set_xticks(tickers)
-            cbar.ax.set_xticklabels([ sa['act'] for sa in seen_activities], fontdict={'fontsize' : 6})
-        else:
-            cbar.ax.set_yticks(tickers)
-            cbar.ax.set_yticklabels([ sa['act'] for sa in seen_activities], fontdict={'fontsize' : 6})
-
+        norm = Normalize(vmin=0, vmax=max(tickers))
+        cbar = self._axes.get_figure().colorbar(ScalarMappable(cmap=ListedColormap(colours), norm=norm), ticks=tickers, orientation=cbar_orientation, cax=cax)
+        tickers = cbar.get_ticks()
+        cbar.set_ticks(tickers, labels=[ sa['act'] for sa in seen_activities], fontsize=6)
+        # adjust tick position if needed
         if self._direction == self.Direction.NORTH:
             cbar.ax.get_xaxis().set_ticks_position('top')
 
@@ -228,6 +224,7 @@ class DottedEventHistogramExtension(ChartExtension):
                 )    
                 self._axes.set_xlim([min_x,max_x])
         else:
+            # adjust ticks for trace identifiers
             portion = (max_x - min_x) / 8.0
             ticks = [min_x] + [int(np.floor((min_x + (i*portion)))) for i in range(1,8)] + [max_x]
             if orientation == 'horizontal':
