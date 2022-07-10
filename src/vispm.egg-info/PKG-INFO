@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: vispm
-Version: 0.0.5
+Version: 0.0.6
 Summary: A visulisation package for process mining activties
 Home-page: https://github.com/AdamBanham/vispm
 Author: Adam
@@ -168,6 +168,50 @@ presentor.plot()
 
 <div style="width:100%;display:inline-block">
     <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_ext_evhist.png" alt="Dotted Chart with Event Histogram" style="transform: scale(0.5);width: 48%">
+</div>
+
+#### DescriptionHistogramExtension
+
+This extension describes an aspect of the event log. For example, a breakdown of trace duration, or trace length (by the number of activities), or event label, or when events occur (weekday or monthday).
+
+The following example shows how to use this extension to understand the properties of event log, alongside a dotted chart.
+```python
+cmap = get_cmap(HIGH_CONTRAST_COOL, 26)
+presentor = StaticDottedChartPresentor(log,dpi=100,
+    event_colour_scheme=StaticDottedChartPresentor.EventColourScheme.EventLabel,
+    colormap=cmap
+)
+
+ext = DescriptionHistogramExtension(
+)
+presentor.add_extension(ext)
+
+ext = DescriptionHistogramExtension(
+    direction=DescriptionHistogramExtension.Direction.EAST,
+    describe=DescriptionHistogramExtension.Describe.TraceLength,
+    density=DescriptionHistogramExtension.Density.Event
+)
+presentor.add_extension(ext)
+
+ext = DescriptionHistogramExtension(
+    direction=DescriptionHistogramExtension.Direction.SOUTH,
+    describe=DescriptionHistogramExtension.Describe.TraceDuration,
+    density=DescriptionHistogramExtension.Density.Trace
+)
+presentor.add_extension(ext)
+
+ext = DescriptionHistogramExtension(
+    direction=DescriptionHistogramExtension.Direction.WEST,
+    describe=DescriptionHistogramExtension.Describe.Monthday,
+    density=DescriptionHistogramExtension.Density.Event
+)
+presentor.add_extension(ext)
+
+presentor.plot()
+```
+
+<div style="width:100%;display:inline-block">
+    <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_ext_deschist.png" alt="Dotted Chart with Description Histogram" style="transform: scale(0.5);width: 48%">
 </div>
 
 #### Running Presentors

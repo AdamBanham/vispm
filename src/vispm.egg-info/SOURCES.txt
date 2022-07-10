@@ -13,6 +13,7 @@ src/vispm/extensions/__init__.py
 src/vispm/extensions/_base.py
 src/vispm/extensions/dotted/__init__.py
 src/vispm/extensions/dotted/colour_histogram.py
+src/vispm/extensions/dotted/description_histogram.py
 src/vispm/extensions/dotted/event_histogram.py
 src/vispm/helpers/__init__.py
 src/vispm/helpers/colours/__init__.py
