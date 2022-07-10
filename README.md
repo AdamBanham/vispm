@@ -161,35 +161,33 @@ This extension describes an aspect of the event log. For example, a breakdown of
 The following example shows how to use this extension to understand the properties of event log, alongside a dotted chart.
 ```python
 cmap = get_cmap(HIGH_CONTRAST_COOL, 26)
-describe = DescriptionHistogramExtension.Describe.EventLabel
-
 presentor = StaticDottedChartPresentor(log,dpi=100,
     event_colour_scheme=StaticDottedChartPresentor.EventColourScheme.EventLabel,
     colormap=cmap
 )
 
 ext = DescriptionHistogramExtension(
-    describe=describe
 )
 presentor.add_extension(ext)
 
 ext = DescriptionHistogramExtension(
     direction=DescriptionHistogramExtension.Direction.EAST,
-    describe=describe
+    describe=DescriptionHistogramExtension.Describe.TraceLength,
+    density=DescriptionHistogramExtension.Density.Event
 )
 presentor.add_extension(ext)
 
 ext = DescriptionHistogramExtension(
     direction=DescriptionHistogramExtension.Direction.SOUTH,
-    describe=describe,
+    describe=DescriptionHistogramExtension.Describe.TraceDuration,
     density=DescriptionHistogramExtension.Density.Trace
 )
 presentor.add_extension(ext)
 
 ext = DescriptionHistogramExtension(
     direction=DescriptionHistogramExtension.Direction.WEST,
-    describe=describe,
-    density=DescriptionHistogramExtension.Density.Trace
+    describe=DescriptionHistogramExtension.Describe.Monthday,
+    density=DescriptionHistogramExtension.Density.Event
 )
 presentor.add_extension(ext)
 
