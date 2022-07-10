@@ -14,6 +14,9 @@ class SequenceDataExtractor():
     TIME_ATTR = "time:timestamp"
     LABEL_ATTR = "concept:name"
     LIFE_ATTR = "lifecycle:transition"
+    RESOURCE_ATTR = "org:resource"
+
+    DEFAULT = "MISSING"
 
     def __init__(self) -> None:
         self._errored_keys = dict() 
@@ -43,9 +46,10 @@ class SequenceDataExtractor():
                 weekday = -1
                 monthday = -1 
                 time = 0.0
-            label = self._extract_xes_key(self.LABEL_ATTR, event, "Missing")
-            lifecycle = self._extract_xes_key(self.LIFE_ATTR, event, "missing")
-            data = SequenceData(time,weekday,monthday,label,lifecycle)
+            label = self._extract_xes_key(self.LABEL_ATTR, event, self.DEFAULT)
+            lifecycle = self._extract_xes_key(self.LIFE_ATTR, event, self.DEFAULT)
+            resource = str(self._extract_xes_key(self.RESOURCE_ATTR, event , self.DEFAULT))
+            data = SequenceData(time,weekday,monthday,label,lifecycle,resource)
             timepoints.append(data)
         timepoints = sorted(timepoints, key=lambda x: x.time)
         return timepoints
