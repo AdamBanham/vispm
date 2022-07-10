@@ -25,7 +25,10 @@ class DescriptionHistogramExtension(ChartExtension):
     ----
     To use this extension call the following methods, finally attach to presentor:
     ```
-    extension = DescriptionHistogramExtension()
+    extension = DescriptionHistogramExtension(
+        describe=DescriptionHistogramExtension.Describe.EventLabel,
+        density=DescriptionHistogramExtension.Density.Trace
+    )
     presentor.add_extension(extension)
     presentor.plot()
     ```
@@ -35,13 +38,13 @@ class DescriptionHistogramExtension(ChartExtension):
     [Optional] Sets what direction to build axes in for extension \n
     \n
     describe: `Density=Density.Event`\n
-    [Optional]  \n 
+    [Optional]  How to count for the bins in the histogram, e.g. count total events or traces. \n 
     \n
     describe: `Describe=Describe.EventLabel`\n
-    [Optional]  \n 
+    [Optional]  The aspect to describe, such as event's acitvity label, trace duration, weekday, monthday, or trace length.\n 
     \n
     colormap: `matplotlib.colors.Colormap=HIGH_CONTRAST_COOL`\n
-    [Optional]  \n 
+    [Optional]  The colourmap used for the colorbar (if needed) and colours for bins in histogram. Colourmap will be resampled.\n 
     \n
     debug:`bool=True`\n
     [Optional] Sets whether debug messages are printed.\n
