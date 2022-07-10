@@ -154,6 +154,52 @@ presentor.plot()
     <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_ext_evhist.png" alt="Dotted Chart with Event Histogram" style="transform: scale(0.5);width: 48%">
 </div>
 
+#### DescriptionHistogramExtension
+
+This extension describes an aspect of the event log. For example, a breakdown of trace duration, or trace length (by the number of activities), or event label, or when events occur (weekday or monthday).
+
+The following example shows how to use this extension to understand the properties of event log, alongside a dotted chart.
+```python
+cmap = get_cmap(HIGH_CONTRAST_COOL, 26)
+describe = DescriptionHistogramExtension.Describe.EventLabel
+
+presentor = StaticDottedChartPresentor(log,dpi=100,
+    event_colour_scheme=StaticDottedChartPresentor.EventColourScheme.EventLabel,
+    colormap=cmap
+)
+
+ext = DescriptionHistogramExtension(
+    describe=describe
+)
+presentor.add_extension(ext)
+
+ext = DescriptionHistogramExtension(
+    direction=DescriptionHistogramExtension.Direction.EAST,
+    describe=describe
+)
+presentor.add_extension(ext)
+
+ext = DescriptionHistogramExtension(
+    direction=DescriptionHistogramExtension.Direction.SOUTH,
+    describe=describe,
+    density=DescriptionHistogramExtension.Density.Trace
+)
+presentor.add_extension(ext)
+
+ext = DescriptionHistogramExtension(
+    direction=DescriptionHistogramExtension.Direction.WEST,
+    describe=describe,
+    density=DescriptionHistogramExtension.Density.Trace
+)
+presentor.add_extension(ext)
+
+presentor.plot()
+```
+
+<div style="width:100%;display:inline-block">
+    <img src="https://vispm.s3.ap-southeast-2.amazonaws.com/Dotted_ext_deschist.png" alt="Dotted Chart with Description Histogram" style="transform: scale(0.5);width: 48%">
+</div>
+
 #### Running Presentors
 
 More on these in upcoming updates.
