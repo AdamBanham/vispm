@@ -201,6 +201,8 @@ class StaticDottedChartPresentor(StaticPresentor):
         #add labels
         self._ax.set_ylabel("Trace")
         self._ax.set_xlabel("Time")
+        self._ax.set_yticks([len(self._sequences)])
+        self._ax.set_yticklabels([ f"{int(len(self._sequences))}"])
         self._ax.set_title(f"Dotted Chart of\n {self._log_name}")
         self._ax.grid(True,color="grey",alpha=0.33)
         self._debug("Plot is ready to show...")
