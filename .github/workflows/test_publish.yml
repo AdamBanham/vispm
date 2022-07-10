@@ -3,14 +3,13 @@ on:
   push:
     branches:
       - 'dev'
-      
-if: github.event_name == 'push' && contains(github.ref, 'refs/tags/v')
 
 permissions:
   contents: read
 
 jobs:
   deploy:
+    if: github.event_name == 'push' && contains(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
