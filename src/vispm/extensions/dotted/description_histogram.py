@@ -257,10 +257,7 @@ class DescriptionHistogramExtension(ChartExtension):
             orientation = 'vertical'
 
         # determine rwidth
-        if self._describe == self.Describe.TraceDuration:
-            rwidth = 1
-        else:
-            rwidth = 0.85
+        rwidth = 0.85
 
 
         # plot histogram
