@@ -4,6 +4,8 @@
 </p>
 
 # VISPM: Visualisations for Process Mining
+[![Publish to PyPI](https://github.com/AdamBanham/vispm/actions/workflows/publish.yml/badge.svg)](https://github.com/AdamBanham/vispm/actions/workflows/publish.yml)
+
 
 A python library for creating visualisations related to process mining, all graphs are generated using [matplotlib](https://pypi.org/project/matplotlib/).
 
