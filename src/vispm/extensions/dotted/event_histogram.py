@@ -131,6 +131,9 @@ class DottedEventHistogramExtension(ChartExtension):
             self._event_mapper.add_label(label)
             sa['act'] = self._event_mapper.get_label(label)
 
+        # display event imputing for debugging
+        self._debug(f"Event labels are imputed as :: {self._event_mapper._lookup}")
+        
         if self._direction == self.Direction.EAST or self._direction == self.Direction.WEST:
             orientation = 'horizontal'
         else:
