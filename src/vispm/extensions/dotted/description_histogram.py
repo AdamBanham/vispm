@@ -218,15 +218,15 @@ class DescriptionHistogramExtension(ChartExtension):
         edge_dist = ((max_edge - min_edge)/scale) /100
         min_edge = min_edge/scale 
         max_edge = max_edge/scale
-        bin_edges = [min_edge/scale] + [min_edge + (edge_dist * i) for i in range(1,100)] + [max_edge]
+        bin_edges = [min_edge] + [min_edge + (edge_dist * i) for i in range(1,100)] + [max_edge]
         colour_maximun = bin_edges[-1]
         self._colormap = get_cmap(self._colormap, len(bin_edges))
 
         for seq,dur in zip(sequences,durs):
             if self._counter == self.Density.Event:
-                x_subset = [ dur for s in seq ]
+                x_subset = [ dur/scale for s in seq ]
             else:
-                x_subset = [ dur ]
+                x_subset = [ dur/scale ]
             bin_values = bin_values + x_subset
             
         return bin_values, scale, bin_edges, scale_unit, colour_maximun 
