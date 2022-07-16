@@ -46,6 +46,7 @@ class EventLabelImputer():
             if label in self._keyyer.keys():
                 val = self._keyyer[label]
             else:
+                print(f"{self._curr=} :: {len(self._OPTIONS)=}")
                 val = self._OPTIONS[self._curr]
                 while val in self._keyyer.values():
                     self._curr += 1
@@ -60,7 +61,7 @@ class EventLabelImputer():
             self._lookup[label] = val 
             self._colour_lookup[label] = cval
             self._curr += 1
-            if (self._curr > len(self._OPTIONS)):
+            if (self._curr >= len(self._OPTIONS)):
                 self._curr = 0
             self._num_lookup[label] = self._num 
             self._num += 1
