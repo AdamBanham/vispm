@@ -149,7 +149,13 @@ class DottedEventHistogramExtension(ChartExtension):
             cax = divider.append_axes('top', size='10%', pad=0.2)
         else:
             cbar_orientation = 'vertical'
-            cax = divider.append_axes('right', size='10%', pad=0.2)
+            if self._direction == self.Direction.WEST:
+                cax = divider.append_axes('right', size='10%', pad=0.2)
+                offset:Axes = divider.append_axes('right', size='8%', pad=0.05)
+                offset.set_frame_on(False)
+                offset.set_visible(False)
+            else:
+                cax = divider.append_axes('right', size='10%', pad=0.2)
         
         # add colourbar to axes
         tickers = list(range(0,len(seen_activities)))
