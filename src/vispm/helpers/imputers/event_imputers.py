@@ -8,12 +8,7 @@ from matplotlib.cm import get_cmap
 class EventLabelImputer():
 
     _OPTIONS = deepcopy(ascii_uppercase)
-    _length = 1
-    _prefix = ""
-    _keyyer = {}
-    _colour_keyyer = {}
-    _colour_map = get_cmap("jet")
-    _colour_map_max = 25 
+
 
     def __init__(self, name_keyyer=None, colour_keyyer=None) -> None:
         self._lookup = dict()
@@ -21,6 +16,13 @@ class EventLabelImputer():
         self._colour_lookup = dict()
         self._curr = 0
         self._num = 0
+        self._length = 1
+        self._prefix = ""
+        self._prefex = []
+        self._keyyer = {}
+        self._colour_keyyer = {}
+        self._colour_map = get_cmap("jet")
+        self._colour_map_max = 25 
         if name_keyyer != None:
             self._keyyer = deepcopy(name_keyyer)
         if colour_keyyer != None:
@@ -47,12 +49,12 @@ class EventLabelImputer():
                 val = self._keyyer[label]
             else:
                 print(f"{self._curr=} :: {len(self._OPTIONS)=}")
-                val = self._OPTIONS[self._curr]
+                val = self._prefix + self._OPTIONS[self._curr]
                 while val in self._keyyer.values():
                     self._curr += 1
                     if (self._curr > len(self._OPTIONS)):
                         self._curr = 0
-                    val = self._OPTIONS[self._curr]
+                    val = self._prefix + self._OPTIONS[self._curr]
             if label in self._colour_keyyer:
                 cval = self._colour_keyyer[label]
             else :
@@ -62,7 +64,18 @@ class EventLabelImputer():
             self._colour_lookup[label] = cval
             self._curr += 1
             if (self._curr >= len(self._OPTIONS)):
+                # reset current pointer
                 self._curr = 0
+                # handle prefix selection
+                if (len(self._prefex) < 1):
+                    self._prefex.append(0)
+                    self._prefix = self._OPTIONS[self._prefex[-1]]
+                elif (self._prefex[-1]+1 < len(self._OPTIONS)):
+                    self._prefex[-1] = self._prefex[-1] + 1 
+                    self._prefix = self._prefix[:-1] + self._OPTIONS[self._prefex[-1]]
+                else:
+                    self._prefex.append(0)
+                    self._prefix = self._prefix + self._OPTIONS[self._prefex[-1]]
             self._num_lookup[label] = self._num 
             self._num += 1
             return True
