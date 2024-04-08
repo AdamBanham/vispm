@@ -124,10 +124,17 @@ class StaticDottedChartPresentor(StaticPresentor):
                 self._debug(f"Unknown ColourImputer passed, unsafe to continue : passed {event_colour_scheme.__class__.__name__} which is not a subclass of vispm.helpers.imputers.colour_imputers.ColourImputer.")
                 raise AttributeError("Given event colourer is not a subclass of ColourImputer.")
         #try to find event log name in attributes
-        try :
-            self._log_name = event_log.attributes['concept:name'] 
+        try:
+            from pmkoalas.complex import ComplexEventLog
+            if (isinstance(event_log, ComplexEventLog)):
+                self._log_name = event_log.name
+            else:
+                raise ValueError("not a pmkoalas data structure")
         except:
-            self._debug("Cannot find concept:name in eventlog attributes.")
+            try :
+                self._log_name = event_log.attributes['concept:name'] 
+            except:
+                self._debug("Cannot find concept:name in eventlog attributes.")
         self._debug("Ready to plot...")
 
 

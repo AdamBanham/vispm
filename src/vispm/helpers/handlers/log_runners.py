@@ -90,12 +90,7 @@ class SequenceDataExtractor():
                         for trace in traces:
                             log_sequences.append(self._convert_trace(trace,startingTime.timestamp()))
             else:
-                if start_time == None:
-                    startingTime = log[0][0][self.TIME_ATTR].timestamp()
-                else:
-                    startingTime = start_time.timestamp()
-                for trace in log:
-                    log_sequences.append(self._convert_trace(trace,startingTime))
+                raise ValueError("not a pmkoalas data structure")
         except:
             if start_time == None:
                 startingTime = log[0][0][self.TIME_ATTR].timestamp()
