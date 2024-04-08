@@ -11,7 +11,8 @@ from matplotlib.gridspec import GridSpec
 
 class StaticPresentor(Presentor):
     """
-    Meta class for any static presentor. Each sub-class must implement this interface to be used in the library.
+    Meta class for any static presentor. Each sub-class must implement this 
+    interface to be used in the library.
     """
 
     def __init__(self, debug:bool=True) -> None:
