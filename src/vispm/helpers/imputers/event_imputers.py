@@ -1,6 +1,6 @@
 from copy import deepcopy
 from string import ascii_uppercase
-
+from enum import Enum, auto
 from typing import List, Tuple
 
 from matplotlib.cm import get_cmap
@@ -9,11 +9,27 @@ class EventLabelImputer():
 
     _OPTIONS = deepcopy(ascii_uppercase)
 
+    class IMPUTER_TYPE(Enum):
+        ascii = auto()
+        shorter = auto()
+        asis = auto()
 
-    def __init__(self, name_keyyer=None, colour_keyyer=None) -> None:
+        @staticmethod
+        def find(type:str) -> 'EventLabelImputer.IMPUTER_TYPE':
+            if type == "ascii":
+                return EventLabelImputer.IMPUTER_TYPE.ascii
+            elif type == "shorter":
+                return EventLabelImputer.IMPUTER_TYPE.shorter
+            else:
+                return EventLabelImputer.IMPUTER_TYPE.asis
+
+
+    def __init__(self, name_keyyer=None, colour_keyyer=None, 
+                 type=IMPUTER_TYPE.ascii) -> None:
         self._lookup = dict()
         self._num_lookup = dict()
         self._colour_lookup = dict()
+        self._imputer_type= type
         self._curr = 0
         self._num = 0
         self._length = 1
@@ -48,12 +64,7 @@ class EventLabelImputer():
             if label in self._keyyer.keys():
                 val = self._keyyer[label]
             else:
-                val = self._prefix + self._OPTIONS[self._curr]
-                while val in self._keyyer.values():
-                    self._curr += 1
-                    if (self._curr > len(self._OPTIONS)):
-                        self._curr = 0
-                    val = self._prefix + self._OPTIONS[self._curr]
+                val = self._create_new_label(label)
             if label in self._colour_keyyer:
                 cval = self._colour_keyyer[label]
             else :
@@ -78,6 +89,28 @@ class EventLabelImputer():
             self._num_lookup[label] = self._num 
             self._num += 1
             return True
+    
+    def _create_new_label(self, label:str) -> str:
+        if self._imputer_type == self.IMPUTER_TYPE.ascii:
+            val = self._prefix + self._OPTIONS[self._curr]
+            while val in self._keyyer.values():
+                self._curr += 1
+                if (self._curr > len(self._OPTIONS)):
+                    self._curr = 0
+                val = self._prefix + self._OPTIONS[self._curr]
+            return val
+        elif self._imputer_type == self.IMPUTER_TYPE.asis:
+            return label
+        elif self._imputer_type == self.IMPUTER_TYPE.shorter:
+            words = label.split(" ")
+            val = ""
+            for word in words:
+                if len(word) > 3:
+                    val += word[:3]+"." 
+                else:
+                    val += word
+                val += " "
+            return val 
 
     def get_label_num(self, label:str) -> int:
         if label in self._num_lookup.keys():

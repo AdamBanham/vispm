@@ -13,6 +13,7 @@ Classifier: Operating System :: OS Independent
 Requires-Python: >=3.7
 Description-Content-Type: text/markdown
 License-File: LICENSE
+Requires-Dist: matplotlib>=3.5.0
 
 
 <p align="center">
@@ -20,6 +21,8 @@ License-File: LICENSE
 </p>
 
 # VISPM: Visualisations for Process Mining
+[![Publish to PyPI](https://github.com/AdamBanham/vispm/actions/workflows/publish.yml/badge.svg)](https://github.com/AdamBanham/vispm/actions/workflows/publish.yml)
+
 
 A python library for creating visualisations related to process mining, all graphs are generated using [matplotlib](https://pypi.org/project/matplotlib/).
 

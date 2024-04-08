@@ -68,6 +68,7 @@ class DescriptionHistogramExtension(ChartExtension):
         describe:Describe=Describe.EventLabel,
         density:Density=Density.Event,
         colormap:Colormap=DEFAULT_CM,
+        imputer_type:str="ascii",
         debug: bool = True) -> None:
            super().__init__(debug)
            #setup
@@ -77,6 +78,7 @@ class DescriptionHistogramExtension(ChartExtension):
            self._axes = None 
            self._size = (1.3,1.3)
            self._colormap = colormap
+           self._imputer_type = imputer_type
     
     def compatable_with(self, presentor:Presentor) -> bool:
         return self._compatable is presentor.__class__
@@ -151,7 +153,7 @@ class DescriptionHistogramExtension(ChartExtension):
         colours = []
         seen_activities = sorted(seen_activities, key=lambda x: (x['place']/x['count'],x['count']) )
         max_spot = np.ceil(max([ sa['place'] / sa["count"] for sa in seen_activities ]))
-        labeler = EventLabelImputer()
+        labeler = EventLabelImputer(type=EventLabelImputer.IMPUTER_TYPE.find(self._imputer_type))
         self._colourmap = get_cmap(self._colormap, max_spot)
         for index,sa in enumerate(seen_activities):
             label = sa["act"]
@@ -288,10 +290,12 @@ class DescriptionHistogramExtension(ChartExtension):
                 xticks = [xticks[0]] + mids + [xticks[-1]]
                 xlabels = [ f"{int(t):d}" for t in xticks ]
                 self._axes.set_xticks(xticks)
-                self._axes.set_xticklabels(xlabels, fontdict={"fontsize": 5})
+                self._axes.set_xticklabels(xlabels, 
+                    fontdict={"fontsize": 5, 'rotation': -13})
             else:
                 self._axes.set_xticks(xticks)
-                self._axes.set_xticklabels(bin_labels, fontdict={"fontsize": 5})
+                self._axes.set_xticklabels(bin_labels, 
+                    fontdict={"fontsize": 5, 'rotation': -13})
             self._axes.set_xlim([min(bin_edges), max(bin_edges)])
         else:
             if self._describe == self.Describe.TraceDuration:
@@ -358,10 +362,10 @@ class DescriptionHistogramExtension(ChartExtension):
                 cbar.ax.get_yaxis().set_label_position('left')
         
         # add height label to histogram 
-        if self._counter == self.Density.Event:
-            height_label = "No. of events"
-        else:
-            height_label = "No. of traces"
+        # if self._counter == self.Density.Event:
+        #     height_label = "No. of events"
+        # else:
+        height_label = "No. of traces"
 
         #add bin label
         bin_label = ""

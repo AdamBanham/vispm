@@ -33,4 +33,5 @@ src/vispm/helpers/metaclasses/vispm.py
 src/vispm/running/__init__.py
 src/vispm/static/__init__.py
 src/vispm/static/_base.py
+src/vispm/static/directed_graph.py
 src/vispm/static/dotted.py
