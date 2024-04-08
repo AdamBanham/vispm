@@ -5,6 +5,7 @@ __version__ = "0.0.6.2"
 # dotted chart presentors
 ## static presentors
 from .static.dotted import StaticDottedChartPresentor
+from .static.directed import DirectlyFollowsPresentor
 
 
 # Extensions
