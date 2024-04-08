@@ -30,6 +30,14 @@ class SequenceDataExtractor():
             from pmkoalas.complex import ComplexEvent
             if isinstance(event, ComplexEvent) and key == self.LABEL_ATTR:
                 return event.activity()
+            else:
+                try :
+                    return event[key]
+                except:
+                    if not key in self._errored_keys.keys():
+                        print(f"[{self.__class__.__name__}] Unable to extract XES key on event : missing {key}. Plotting may be affected.")
+                        self._errored_keys[key] = event
+                    return default
         except:
             try :
                 return event[key]
@@ -61,22 +69,39 @@ class SequenceDataExtractor():
 
     def _convert_log(self,log:EventLog,start_time=None) -> List[List[SequenceData]]:
         log_sequences = []
-        if start_time != None:
-            startingTime = start_time.timestamp()
-        else:
-            startingTime = None
-            for variant, traces in log:
-                for trace in traces:
-                    time = self._extract_xes_key(self.TIME_ATTR, trace[0], None)
-                    if time == None:
-                        continue
-                    elif startingTime == None and time != None:
-                        startingTime = time 
-                    else:
-                        if (time < startingTime):
-                            startingTime = time
-        for variant, traces in log:
-                for trace in traces:
-                    log_sequences.append(self._convert_trace(trace,startingTime.timestamp()))
+        try :
+            from pmkoalas.complex import ComplexEventLog
+            if isinstance(log, ComplexEventLog):
+                if start_time != None:
+                    startingTime = start_time.timestamp()
+                else:
+                    startingTime = None
+                    for variant, traces in log:
+                        for trace in traces:
+                            time = self._extract_xes_key(self.TIME_ATTR, trace[0], None)
+                            if time == None:
+                                continue
+                            elif startingTime == None and time != None:
+                                startingTime = time 
+                            else:
+                                if (time < startingTime):
+                                    startingTime = time
+                for variant, traces in log:
+                        for trace in traces:
+                            log_sequences.append(self._convert_trace(trace,startingTime.timestamp()))
+            else:
+                if start_time == None:
+                    startingTime = log[0][0][self.TIME_ATTR].timestamp()
+                else:
+                    startingTime = start_time.timestamp()
+                for trace in log:
+                    log_sequences.append(self._convert_trace(trace,startingTime))
+        except:
+            if start_time == None:
+                startingTime = log[0][0][self.TIME_ATTR].timestamp()
+            else:
+                startingTime = start_time.timestamp()
+            for trace in log:
+                log_sequences.append(self._convert_trace(trace,startingTime))
         log_sequences = sorted(log_sequences,key=lambda x: x[0].time if len(x)> 0 else startingTime)
         return log_sequences
