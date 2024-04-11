@@ -1,18 +1,20 @@
 from ._base import StaticPresentor
 from ..extensions._base import ChartExtension
 from ..helpers.imputers.event_imputers import EventLabelImputer
+from ..helpers.data.cartesian_plotting import CPoint,CShift
 
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
-from matplotlib.patches import Circle
+from matplotlib.patches import Circle,Patch
 
 from scipy import interpolate
 
 import numpy as np
 
 
-from typing import Tuple
+from typing import Tuple, List, Callable, Union, Literal
+from random import choice
 
 PLOT_STATE = ChartExtension.UpdateState
 
@@ -74,128 +76,307 @@ class DirectlyFollowsPresentor(StaticPresentor):
         self.update_extensions(followers=self._followers) 
         self._create_dfg_frame(self._followers,self._ax)
         self._debug("Cleaning up plot...")
-        self._ax.set_xlim(0, 10)
-        self._ax.set_ylim(0, -10)
+        xers = [ pos.x for pos in self._pos_store.values()]
+        max_x = np.max(xers) + np.max(xers) * 0.03
+        self._ax.set_xlim(0, max_x)
+        self._ax.set_ylim(0, -max_x)
+        self._ax.grid()
+        self._debug("Cleaning up ready to show...")
 
     def _create_dfg_frame(self, followers:FollowLanguage, ax:Axes):
+        # handle labels
         imputer = EventLabelImputer(
             type=EventLabelImputer.IMPUTER_TYPE.find("shorter")
         )
         for act in self._acts:
             imputer.add_label(act)
-        starting_acts = [
-            start.right()
+        starters = [
+            start
             for start 
             in followers.starts()
         ]
-        ending_acts = [ 
-            end.left()
+        enders = [ 
+            end
             for end 
             in followers.ends()
         ]
         # work out starting spline
-        A = len(starting_acts)
-        r = 0.25
-        Sx = 0.0625 * (5.65685 * (A+2) + 8 )
-        SL = np.sqrt( 
-            Sx ** 2 + Sx ** 2
+        r = .25
+        # find a nice set of points on curve  
+        starting = self._find_cubic_curve(
+            r,
+            len(starters),
+            CShift( 0, 0),
         )
-        Sy = Sx 
-        shift = np.sqrt( 
-            ((SL / 4) ** 2) / 2.0
+        # plot starting dfg states
+        s_arrow_shift = CShift(
+            (2 * r) * - 1,
+            (2 * r)
         )
-        # create spline point for starting pairs
-        x_curr = (2 * r) + Sx
-        y_curr = (2 * r) * -1
-        points = [
-            ((2 * r) + Sx, (2 * r) * -1)
-        ]
-        for adj in range(3):
-            if adj % 2 == 1:
-                extra = 2 * r * 0.5 + (A / 2.0) * r
-            else:
-                extra = r
-            x_curr = x_curr - shift 
-            y_curr = y_curr + (shift * -1) 
-            points.append((x_curr - extra,y_curr + extra))
-        points.append(((2 * r), ((2 * r) + Sx) * -1))
-        # interplote points 
-        xers = [ x for (x,y) in points ]
-        yers = [ y for (x,y) in points ]
-        xspace = np.linspace(0, 1, A+2)
-        tck, _ = interpolate.splprep([xers, yers], s=5)
-        starting_circle_pos = interpolate.splev(xspace, tck, der=0)
-        # plot starting circles
-        curr = 1
-        for act in starting_acts:
-            x = starting_circle_pos[0][curr]
-            y = starting_circle_pos[1][curr]
-            sact = imputer.get_label(act)
-            circle =  Circle((x,y), r, color="green")
-            ax.add_patch(circle)
-            ax.text(x - (r/2), y, sact, fontdict={"fontsize" : 5})
-            # add incoming arrow
-            x2 = x - (2 * r)
-            y2 = y + (2 * r)
-            f_lin =  interpolate.interp1d( 
-                [x2, x], [y2, y])
-            xpsace = np.linspace(x2,x - r * 0.5,100)
-            lines = ax.plot( 
-                xpsace,
-                f_lin(xpsace),
-                'black'
+        e_arrow_shift = CShift(
+            (r * 0.5) * -1,
+            (r * 0.5),
+        )
+        # store dfg positions 
+        self._pos_store = {}
+        for start,point in zip(starters,starting[1:-1]):
+            # plot starting dfg state
+            self._pos_store[start] = point
+            self._plot_dfg_state(
+                point,
+                r,
+                imputer.get_label(start.right()),
+                "green"
             )
-            self._add_arrow(lines[0], xpsace[98])
-            curr += 1
-        # # randomally draw a circle for each 
-        # min_x = 0 
-        # max_x = 10
-        # min_y = 0
-        # max_y = 10
-        # # find some points
-        # x_vals = min_x + np.random.rand(len(self._acts)) * (max_x - min_x)
-        # y_vals = min_y + np.random.rand(len(self._acts)) * (max_y - min_y)
-        # # drawing
-        
-        # for act, x, y in zip(self._acts, x_vals, y_vals):
-        #     if act in starting_acts:
-        #         color = "green"
-        #     elif act in ending_acts:
-        #         color = "red"
-        #     else:
-        #         color = "gray"
-        #     act = imputer.get_label(act)
-        #     circle =  Circle((x,y), 0.25, color=color)
-        #     ax.add_patch(circle)
-        #     ax.text(x - (r/2), y, act, fontdict={"fontsize" : 5})
-        # # add spline between cords
-        # for x1, y1, x4, y4 in zip(x_vals[:-1], y_vals[:-1], x_vals[1:], y_vals[1:]):
-        #     dist_x = np.abs(x4 - x1) / 4.0
-        #     dist_y = np.abs(y4 - y1) / 4.0
-        #     x2 = x1 + dist_x if x1 < x4 else x1 - dist_x
-        #     y2 = y1 + dist_y if y1 < y4 else y1 - dist_y 
-        #     y2 += np.random.random()
-        #     x3 = x1 + dist_x * 3 if x1 < x4 else x1 - dist_x * 3
-        #     y3 = y1 + dist_y * 3 if y1 < y4 else y1 - dist_y * 3
-        #     y3 += np.random.random()
-        #     vals = np.array( [[x1,y1],[x2,y2],[x3,y3], [x4,y4]])
-        #     xers = vals[:,0]
-        #     yers = vals[:,1]
-        #     f_cubic = interpolate.interp1d( 
-        #         xers, yers, kind='cubic')
-        #     if x1 < x4:
-        #         xspace = np.linspace( x1, x4, 100 )
-        #     else:
-        #         xspace = np.linspace( x4, x1, 100)
-        #     line = ax.plot(xspace, f_cubic(xspace), "green")
-        #     self._add_arrow(line[0], xspace[95], color='black')
+            # add incoming arrow
+            start_point = point.add_shift(s_arrow_shift)
+            end_point = point.add_shift(e_arrow_shift)
+            self._create_arrow(start_point, end_point, 98)
+        # # plot the inbetweens of the dfg
+        # for pair in followers.__iter__():
+        #     if pair not in followers.starts() and pair not in followers.ends():
+        #         point = CPoint( 
+        #             2 + np.random.rand() * (7 - 2),
+        #             -1 * (2 + np.random.rand() * (7 - 2))
+        #         )
+        #         while self._overlaps(point, 2 * r) and \
+        #             self._overlaps(point, 4 * r):
+        #             point = CPoint( 
+        #             2 + np.random.rand() * (7 - 2),
+        #             -1 * (2 + np.random.rand() * (7 - 2))
+        #             )
+        #         self._pos_store[pair] = point
+        #         self._plot_dfg_state(
+        #             point,
+        #             r,
+        #             imputer.get_label(pair.right()),
+        #             "gray"
+        #         )
+        # add arcs and inbetween starts and ends
+        working = [ pair for pair in starters ]
+        # work out all the adjustments first
+        adjustments = dict( 
+            (pair, CShift(0, 0))
+            for pair 
+            in starters
+        )
+        adjustment = CShift( 2, -2)
+        seen = set()
+        while len(working) > 0:
+            # pick the oldest state
+            current = working.pop(0)
+            left = adjustments[current]
+            # get the following pairs
+            nexters = followers.get(current.right())
+            for next in nexters:
+                if next not in seen and next not in enders:
+                    adjustments[next] = left.add(adjustment)
+                    working.append(next)
+                    seen.add(next)
+        # now work out a collection of points for each shift
+        currrent_adjust = adjustment.magnify(1)
+        adjustment_points = {}
+        row_members = [ 
+            val for val in adjustments.values() if val == currrent_adjust 
+        ]
+        while len(row_members) > 0:
+            adjustment_points[currrent_adjust] = self._find_cubic_curve(
+                r, (len(row_members))*2, currrent_adjust
+            )[1:-1:2]
+            currrent_adjust = currrent_adjust.add(adjustment)
+            row_members = [ 
+                val for val in adjustments.values() if val == currrent_adjust 
+            ]
 
+        keys = sorted(list(adjustment_points.keys()), key=lambda x: x.x)
+        for key in keys:
+            print(
+                f"for key :: {key}"
+            )
+            print(
+                f"we have the following points :: {str(adjustment_points[key])}"
+            )
+        # find a nice set of points on curve  for enders
+        ending = self._find_cubic_curve(
+            r,
+            (len(enders))*2,
+            currrent_adjust,
+        )
+        # plot ending dfg states
+        for end,point in zip(enders,ending[1:-1:2]):
+            # plot starting dfg state
+            self._pos_store[end] = point
+            self._plot_dfg_state(
+                point,
+                r,
+                imputer.get_label(end.left()),
+                "red"
+            )
+            # add incoming arrow
+            end_point = point.add_shift(s_arrow_shift.inverse())
+            start_point = point.add_shift(e_arrow_shift.inverse())
+            self._create_arrow(start_point, end_point, 98)
+        # finally plot new states
+        seen = set()
+        working = [ pair for pair in starters ]
+        while len(working) > 0:
+            # pick the oldest state
+            current = working.pop(0)
+            # get its position
+            start_pos = self._pos_store[current]
+            # look at its next
+            nexters = followers.get(current.right())
+            # plot state and draw arc between current and arc
+            for arc in nexters:
+                if arc not in seen and arc not in enders:
+                    # plot and store a new state 
+                    point = adjustment_points[adjustments[arc]].pop()
+                    self._pos_store[arc] = point
+                    self._plot_dfg_state(
+                        point,
+                        r,
+                        imputer.get_label(arc.right()),
+                        "gray"
+                    )
+                # arc
+                end_pos = self._pos_store[arc]
+                end_point = end_pos.add_shift(e_arrow_shift)
+                start_point = start_pos.add_shift(e_arrow_shift.inverse())
+                self._create_arrow(start_point, end_point, 98)
+                if arc not in seen:
+                    working.append(arc)
+                    seen.add(arc)
+                
 
     def get_axes(self) -> Axes:
         return self._ax 
 
     def get_figure(self) -> Figure:
         return self._fig 
+    
+    def _overlaps(self, point:CPoint, range:float) -> bool:
+        """
+        Returns true if the given point is within the range of anything else
+        in storage, otherwise false.
+        """
+        for other in self._pos_store.values():
+            if point.difference(other) <= range:
+                return True
+        return False
+
+    
+    def _plot_dfg_state(self, p:CPoint, r:float, 
+                    label:str, colour="None") -> Patch:
+        """
+        Plots a state of the dfg at the given point.
+        """
+        circle =  Circle((p.x,p.y), r, color=colour)
+        self._ax.add_patch(circle)
+        text_shift = CShift(-1 * (r/2), 0)
+        tp = p.add_shift(text_shift)
+        self._ax.text(tp.x, tp.y, label, fontdict={"fontsize" : 5})
+
+    
+    def _interpolate_between(self, points:List[CPoint], 
+                            )-> Callable:
+        """
+        Given a sequence of points, returns the linear interpolate between 
+        them, returns a function on x to find y.
+        """
+        xers = [ p.x for p in points]
+        yers = [ p.y for p in points ]
+        return  interpolate.interp1d( 
+                xers, yers
+        )
+
+    def _cubic_interpolate(self, points:List[CPoint],
+                           smoothing:float = 1.5,
+                           num_points:int = 3,
+                           ) -> List[CPoint]:
+        """
+        Finds a cubic ploynomial between the givens and returns num_points
+        points along the found curve.
+        """
+        xers = [ p.x for p in points ]
+        yers = [ p.y for p in points ]
+        xspace = np.linspace(0, 1, num_points)
+        tck, _ = interpolate.splprep([xers, yers], s=smoothing)
+        positions = interpolate.splev(xspace, tck, der=0)
+        return [ 
+            CPoint(x, y)
+            for x,y 
+            in zip(positions[0], positions[1])
+        ]
+    
+    def _find_cubic_curve(self, 
+                          radius:float,
+                          points_on_curve:int,
+                          start_shift:CShift,
+                          ) -> List[CPoint]:
+        """
+        
+        """
+        # equation setup for curve finding
+        Sx = 0.0625 * (5.65685 * (points_on_curve+2) + 8 )
+        SL = np.sqrt( 
+            Sx ** 2 + Sx ** 2
+        )
+        SL_shift = np.sqrt( 
+            ((SL / 4) ** 2) / 2.0
+        )
+        adj_shift = CShift(-1 * SL_shift, -1 * SL_shift)
+        # create points for cubic interpolation
+        start_point = CPoint(
+            (2 * radius) + Sx, (2 * radius) * -1
+        ).add_shift(start_shift)
+        points = [
+            start_point
+        ]
+        curr_point = start_point
+        for adj in range(3):
+            if adj % 2 == 1:
+                extra = 2 * radius * 0.5 + (points_on_curve / 2.0) * radius
+            else:
+                extra = radius
+            # travel along long side
+            curr_point = curr_point.add_shift(
+                adj_shift
+            )
+            # shift left or right
+            extra_shift = CShift(
+                -1 * extra, 
+                extra
+            )
+            # add to interpolation
+            points.append(
+                curr_point.add_shift(extra_shift)
+            )
+        # add far end of long side
+        points.append(
+            curr_point.add_shift(
+                adj_shift
+            )
+        )
+        # find cubic interpolation
+        points = self._cubic_interpolate(points, num_points=points_on_curve+2)
+        return points
+    
+    def _create_arrow(self, start:CPoint, end:CPoint, 
+                      
+                      arrow_cutoff:int=100):
+        """
+        Plots an arrowhead between start and end, with the head at the end.
+        """
+        f_lin =  self._interpolate_between([start,end])
+        xpsace = np.linspace(start.x, end.x, 100)
+        lines = self._ax.plot( 
+            xpsace,
+            f_lin(xpsace),
+            'black',
+            alpha=0.33
+        )
+        self._add_arrow(lines[0], xpsace[arrow_cutoff])
+
     
     def _add_arrow(self, line, position=None, direction='right', size=15, color=None):
         """
@@ -225,8 +406,9 @@ class DirectlyFollowsPresentor(StaticPresentor):
         line.axes.annotate('',
             xytext=(xdata[start_ind], ydata[start_ind]),
             xy=(xdata[end_ind], ydata[end_ind]),
-            arrowprops=dict(arrowstyle="->", color=color),
-            size=size
+            arrowprops=dict(arrowstyle="->", color=color, alpha=0.66),
+            size=size,
+            alpha=0.33
         )
 
     
