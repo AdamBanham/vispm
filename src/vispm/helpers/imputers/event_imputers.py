@@ -11,6 +11,7 @@ class EventLabelImputer():
 
     class IMPUTER_TYPE(Enum):
         ascii = auto()
+        firstletter = auto()
         shorter = auto()
         asis = auto()
 
@@ -20,6 +21,8 @@ class EventLabelImputer():
                 return EventLabelImputer.IMPUTER_TYPE.ascii
             elif type == "shorter":
                 return EventLabelImputer.IMPUTER_TYPE.shorter
+            elif type == "shortest":
+                return EventLabelImputer.IMPUTER_TYPE.firstletter
             else:
                 return EventLabelImputer.IMPUTER_TYPE.asis
 
@@ -99,6 +102,17 @@ class EventLabelImputer():
                     self._curr = 0
                 val = self._prefix + self._OPTIONS[self._curr]
             return val
+        elif self._imputer_type == self.IMPUTER_TYPE.firstletter:
+            vals = label.split(" ")
+            selection = [ (0,1) for v in vals]
+            letters = [ str(v[low:upper]) for v,(low,upper) in zip(vals, selection)]
+            letters[0] = letters[0].upper()
+            for lidx in range(1, len(letters)):
+                letters[lidx] = letters[lidx].lower()
+            val = ""
+            for letter in letters:
+                val+= letter
+            return val
         elif self._imputer_type == self.IMPUTER_TYPE.asis:
             return label
         elif self._imputer_type == self.IMPUTER_TYPE.shorter:
@@ -106,10 +120,9 @@ class EventLabelImputer():
             val = ""
             for word in words:
                 if len(word) > 3:
-                    val += word[:3]+"." 
+                    val += (word[:3]+".").capitalize()
                 else:
-                    val += word
-                val += " "
+                    val += word.capitalize()
             return val 
 
     def get_label_num(self, label:str) -> int:
