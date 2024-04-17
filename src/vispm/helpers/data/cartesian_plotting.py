@@ -1,8 +1,9 @@
 
 from dataclasses import dataclass
-from typing import List
+from typing import List, Callable
 
 import numpy as np
+from scipy import interpolate
 
 @dataclass(frozen=True)
 class CShift():
@@ -58,15 +59,14 @@ class CPoint():
             self.y + shift.y
         )
     
-    def difference(self, other:'CPoint') -> float:
+    def difference(self, other:'CPoint') -> CShift:
         """
         Returns the cartesian difference between this point and another,
-        returns the absolute difference.
+        returns the relative distance between x and y as a CShift.
         """
-        return np.sqrt(
-            np.power( np.abs(self.x - other.x), 2)
-            +
-            np.power( np.abs(self.y - other.y), 2)
+        return CShift(
+            other.x - self.x,
+            other.y - self.y
         )
     
     def shift_to_quad(self, quad:int) -> 'CPoint':
@@ -97,30 +97,19 @@ class CCircle():
     """
     A representation of the permeter of a circle on a cartesian plane.
     """
-    centre:CPoint
+    center:CPoint
     radius:int
 
     def get_point_on_perimeter(self, degree:float) -> CPoint:
         """
         Finds a cartesian point on the perimeter of this circle.
-        Using the general form, where given the orgin (x,y) and radius r,
-        where does the top point (x,y+r) move to after a rotation of D,
-        the rotated point (u,v) can be found using:
-        u = x cos(D) + (y+r) sin(D);
-        v = -x sin(D) + (y+r) cos(D);
         """
-        # first shift the orgin to the top
-        rotation = self.centre.add_shift(
-            CPoint(0, self.radius)
-        )
-        #
         radians = (degree * np.pi) / 180.0
-        # then compute x-axis and y-axis
-        u = rotation.x * np.cos(radians) + rotation.y * np.sin(radians)
-        v = -1 * rotation.x * np.sin(radians) + rotation.y * np.cos(radians)
-        return CPoint(
-            u, v
+        point = CPoint(
+            self.center.x + (self.radius * np.cos(radians)), 
+            self.center.y + (self.radius * np.sin(radians))
         ) 
+        return point
 
     def find_equal_distance_points(self, lower:float, upper:float, 
                                    num:int,) -> List[CPoint]:
@@ -147,6 +136,19 @@ class CCircle():
                 f" resultant radius was {radius}"
                 )
         return CCircle(
-            self.centre,
+            self.center,
             radius
+        )
+
+
+# helper functions
+def interpolate_between(points:List[CPoint], )-> Callable:
+        """
+        Given a sequence of points, returns the linear interpolate between 
+        them, returns a function on x to find y.
+        """
+        xers = [ p.x for p in points]
+        yers = [ p.y for p in points ]
+        return  interpolate.interp1d( 
+                xers, yers
         )
