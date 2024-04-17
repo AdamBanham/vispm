@@ -7,7 +7,7 @@ from ..helpers.data.cartesian_plotting import interpolate_between
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
-from matplotlib.patches import Circle,Patch
+from matplotlib.patches import Circle,Polygon
 from scipy import interpolate
 import numpy as np
 
@@ -70,9 +70,9 @@ class DirectlyFollowsState():
         ax.add_patch(circle)
         # add a patch for start (tri) and end (square)?
         if self.type == self.StateType.start:
-            pass 
+            self._add_start_symbol(ax, self.area) 
         elif self.type == self.StateType.end:
-            pass 
+            self._add_end_symbol(ax, self.area) 
         # add text for label
         tp = self.origin
         ax.text(tp.x, tp.y, self.label, 
@@ -93,6 +93,43 @@ class DirectlyFollowsState():
             start_point = self.area.get_point_on_perimeter(45)
             end_point = start_point.add_shift(arrow_shift.inverse())
             self._create_arrow(start_point, end_point, ax, "red", 98)
+
+    def _add_start_symbol(self, ax:Axes, circle:CCircle) -> None:
+        "Adds a triangle within the starting circle"
+        inner = CCircle(
+            circle.center,
+            circle.radius * 0.7
+        )
+        p1 = inner.get_point_on_perimeter(225)
+        p2 = inner.get_point_on_perimeter(135)
+        p3 = inner.get_point_on_perimeter(0)
+        triangle = Polygon(
+            [ [p1.x,p1.y], [p2.x,p2.y], [p3.x,p3.y]],
+            closed=True,
+            fill=True,
+            facecolor="white"
+        )
+        ax.add_patch(triangle)
+
+
+    def _add_end_symbol(self, ax:Axes, circle:CCircle) -> None:
+        "Adds a squre within the starting circle"
+        inner = CCircle(
+            circle.center,
+            circle.radius * 0.6
+        )
+        p1 = inner.get_point_on_perimeter(45)
+        p2 = inner.get_point_on_perimeter(135)
+        p3 = inner.get_point_on_perimeter(225)
+        p4 = inner.get_point_on_perimeter(315)
+        square = Polygon(
+            [ [p1.x,p1.y],[p2.x,p2.y], [p3.x,p3.y], [p4.x, p4.y], ],
+            closed=True,
+            fill=True,
+            facecolor="white",
+            capstyle="round"
+        )
+        ax.add_patch(square)
 
     def draw_connection_with(self, other:'DirectlyFollowsState', 
                              ax:Axes, linecolour:str="black"):
@@ -262,7 +299,8 @@ class DirectlyFollowsPresentor(StaticPresentor):
         max_x = np.max(xers) + np.max(xers) * 0.1
         self._ax.set_xlim(0, max_x)
         self._ax.set_ylim(0, max_x)
-        self._ax.grid()
+        self._ax.set_axis_off()
+        # self._ax.grid()
         self._debug("Cleaning up ready to show...")
 
     def _create_dfg_frame(self, followers:FollowLanguage):
