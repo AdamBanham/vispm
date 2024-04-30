@@ -355,6 +355,26 @@ class DirectlyFollowsPresentor(StaticPresentor):
             )
             self._pos_store[start] = state
             state.plot(self._ax)
+        # order bodies by their proximity to starts and ends
+        print("ordering bodies")
+        bodies = [
+            (letter, 
+             sum([ letter in start.proceeding() for start in starters]) 
+             - sum([ (letter in end.preceding()) * 1.2 for end in enders])
+             )
+            for letter
+            in body
+        ]
+        bodies.sort(
+            key=lambda x: x[1],
+            reverse=True
+        )
+        print(bodies)
+        body = [
+            letter
+            for letter,_
+            in bodies
+        ]        
         # add arcs and inbetween starts and ends
         for letter in body:
             curver = curver.change_radius(r * 4)
