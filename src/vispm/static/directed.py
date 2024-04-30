@@ -3,6 +3,7 @@ from ..extensions._base import ChartExtension
 from ..helpers.imputers.event_imputers import EventLabelImputer
 from ..helpers.data.cartesian_plotting import CPoint,CShift,CCircle
 from ..helpers.data.cartesian_plotting import interpolate_between
+from ..helpers.data.cartesian_plotting import angle_from_origin
 
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
@@ -173,6 +174,79 @@ class DirectlyFollowsState():
             [ p.x for p in points ],
             [ p.y for p in points ],
             linecolour,
+            alpha=0.33
+        )
+        self._add_arrow(lines[0], [ p.x for p in points ][15])
+        self._add_arrow(lines[0], [ p.x for p in points ][-5])
+
+    def draw_starting_connection_with(self, other:'DirectlyFollowsState',
+                                      ax:Axes):
+        """
+        TODO
+        """
+        # work out the side to enter on the target
+        if angle_from_origin(self.area.center) >= 45:
+            degree = np.random.randint(30,150)
+            rotation = 1
+        else:
+            degree = np.random.randint(30,90) * -1
+            rotation = -1
+        left = self.area.get_point_on_perimeter(degree)
+        right = other.area.get_point_on_perimeter(degree)
+        # find the mid point between self and other
+        difference = left.difference(right)
+        bet_origin = left.add_shift(
+            difference.magnify(0.5)
+        )
+        rad_shift = left.difference(bet_origin)
+        radius = np.sqrt(
+            rad_shift.x ** 2 + rad_shift.y ** 2
+        )
+        bet_circle = CCircle(
+            bet_origin,
+            radius
+        )
+        # now plot a line between self and other with an arrow
+        # find the starting degree 
+        color = "green"
+        shift = 0.25
+        if rotation < 0:
+            starting = -115
+            # slowly increase until x is right of left
+            check = bet_circle.get_point_on_perimeter(starting)
+            while (check.x < left.x):
+                starting += shift
+                check = bet_circle.get_point_on_perimeter(starting)
+            ending = 115
+            # slowly decrease until x is right of right
+            check = bet_circle.get_point_on_perimeter(ending)
+            while (check.x < right.x):
+                ending -= shift
+                check = bet_circle.get_point_on_perimeter(ending)
+        else:
+            starting = 225
+            # slowly reduce until y is higher than left
+            check = bet_circle.get_point_on_perimeter(starting)
+            while (check.y < left.y):
+                starting -= shift
+                check = bet_circle.get_point_on_perimeter(starting)
+            ending = 15
+            # slowly increase until y is higher than right
+            check = bet_circle.get_point_on_perimeter(ending)
+            while (check.y < right.y):
+                ending += shift
+                check = bet_circle.get_point_on_perimeter(ending)
+        # now plot a curved line with arrows
+        xspace = np.linspace(starting,ending,100)
+        points = [ 
+            bet_circle.get_point_on_perimeter(d)
+            for d 
+            in xspace
+        ]
+        lines = ax.plot( 
+            [ p.x for p in points ],
+            [ p.y for p in points ],
+            color,
             alpha=0.33
         )
         self._add_arrow(lines[0], [ p.x for p in points ][15])
@@ -424,13 +498,13 @@ class DirectlyFollowsPresentor(StaticPresentor):
             state = self._pos_store[start]
             for prec in start.proceeding():
                 other = self._pos_store[prec]
-                self._create_arrow(
-                    state.origin,
-                    other.origin,
-                    "green",
-                    95
-                )
-                # state.draw_connection_with(other, self._ax, linecolour="green")
+                # self._create_arrow(
+                #     state.origin,
+                #     other.origin,
+                #     "green",
+                #     95
+                # )
+                state.draw_starting_connection_with(other, self._ax,)
 
         # plot directly preceeding activites from ends
         for end in enders:
