@@ -152,3 +152,17 @@ def interpolate_between(points:List[CPoint], )-> Callable:
         return  interpolate.interp1d( 
                 xers, yers
         )
+
+def angle_from_origin(point:CPoint) -> float:
+    """
+    Computes the angle of a triangle from this point to the origin (0,0).
+    Returns the angle in degrees.
+    """
+    # compute the length of the long side
+    c = np.sqrt(
+        np.power(point.y, 2) + np.power(point.x, 2) 
+    )
+    # compute the angle of <a
+    return (np.arcsin(
+        point.y / c
+    ) * 180) / np.pi
