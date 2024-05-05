@@ -138,16 +138,14 @@ class DirectlyFollowsState():
         Draw a directed arrow between these two states.
         """
         # find a unit circle between these to curve our line
-        if self.origin.x < other.origin.x:
+        if angle_from_origin(self.origin) < angle_from_origin(other.origin):
             degree = np.random.randint(30,150)
-            left = self.area.get_point_on_perimeter(degree)
-            right = other.area.get_point_on_perimeter(degree)
             rotation = 1
         else:
             degree = np.random.randint(30,150) * -1
-            left = other.area.get_point_on_perimeter(degree)
-            right = self.area.get_point_on_perimeter(degree)
             rotation = -1
+        left = self.area.get_point_on_perimeter(degree)
+        right = other.area.get_point_on_perimeter(degree)
         difference = left.difference(right)
         bet_origin = left.add_shift(
             difference.magnify(0.5)
@@ -161,10 +159,34 @@ class DirectlyFollowsState():
             radius
         )
         # now plot a line along the perimeter
+        shift = 0.25
         if (rotation > 0):
-            xspace = np.linspace(225, 45, 100)
+            starting = 225
+            # slowly reduce until y is higher than left
+            check = bet_circle.get_point_on_perimeter(starting)
+            while (check.difference(left).power() > 0.05):
+                starting -= shift
+                check = bet_circle.get_point_on_perimeter(starting)
+            ending = 15
+            # slowly increase until y is higher than right
+            check = bet_circle.get_point_on_perimeter(ending)
+            while (check.difference(right).power() > 0.05):
+                ending += shift
+                check = bet_circle.get_point_on_perimeter(ending)
         else:
-            xspace = np.linspace(45,-135, 100)
+            starting = -160
+            # slowly increase until x is right of left
+            check = bet_circle.get_point_on_perimeter(starting)
+            while (check.difference(left).power() > 0.05):
+                starting += shift
+                check = bet_circle.get_point_on_perimeter(starting)
+            ending = 115
+            # slowly decrease until x is right of right
+            check = bet_circle.get_point_on_perimeter(ending)
+            while (check.difference(right).power() > 0.05):
+                ending -= shift
+                check = bet_circle.get_point_on_perimeter(ending)
+        xspace = np.linspace(starting, ending, 100)
         points = [ 
             bet_circle.get_point_on_perimeter(d)
             for d 
@@ -179,20 +201,99 @@ class DirectlyFollowsState():
         self._add_arrow(lines[0], [ p.x for p in points ][15])
         self._add_arrow(lines[0], [ p.x for p in points ][-5])
 
+    def draw_ending_connection_with(self, other:'DirectlyFollowsState',
+                                    ax:Axes):
+        """
+        Attempts to draw a nice red arrow to other, used to denote the ending
+        flow a trace.
+        """
+        # work out the side to enter on the target
+        if angle_from_origin(self.origin) > angle_from_origin(other.origin):
+            ldeg = np.random.randint(-45,0)
+            rdeg = np.random.randint(-150,-110)
+            rotation = 1
+        else:
+            ldeg = np.random.randint(90,135)
+            rdeg = np.random.randint(-130,-90)
+            rotation = -1
+        left = self.area.get_point_on_perimeter(ldeg)
+        right = other.area.get_point_on_perimeter(rdeg)
+        # find the mid point between self and other
+        difference = left.difference(right)
+        bet_origin = left.add_shift(
+            difference.magnify(0.5)
+        )
+        rad_shift = left.difference(bet_origin)
+        radius = np.sqrt(
+            rad_shift.x ** 2 + rad_shift.y ** 2
+        )
+        bet_circle = CCircle(
+            bet_origin,
+            radius
+        )
+        # now plot a line between self and other with an arrow
+        # find the starting degree 
+        color = "red"
+        shift = 0.25
+        if rotation < 0:
+            starting = -160
+            # slowly increase until x is right of left
+            check = bet_circle.get_point_on_perimeter(starting)
+            while (check.difference(left).power() > 0.05):
+                starting += shift
+                check = bet_circle.get_point_on_perimeter(starting)
+            ending = 90
+            # slowly decrease until x is right of right
+            check = bet_circle.get_point_on_perimeter(ending)
+            while (check.difference(right).power() > 0.05):
+                ending -= shift
+                check = bet_circle.get_point_on_perimeter(ending)
+            color="purple"
+        else:
+            starting = 225
+            # slowly reduce until y is higher than left
+            check = bet_circle.get_point_on_perimeter(starting)
+            while (check.difference(left).power() > 0.05):
+                starting -= shift
+                check = bet_circle.get_point_on_perimeter(starting)
+            ending = 360
+            # slowly increase until y is higher than right
+            check = bet_circle.get_point_on_perimeter(ending)
+            while (check.difference(right).power() > 0.05):
+                ending -= shift
+                check = bet_circle.get_point_on_perimeter(ending)
+        # now plot a curved line with arrows
+        xspace = np.linspace(starting,ending,100)
+        points = [ 
+            bet_circle.get_point_on_perimeter(d)
+            for d 
+            in xspace
+        ]
+        lines = ax.plot( 
+            [ p.x for p in points ],
+            [ p.y for p in points ],
+            color,
+            alpha=0.33
+        )
+        self._add_arrow(lines[0], [ p.x for p in points ][15])
+        self._add_arrow(lines[0], [ p.x for p in points ][-5])
+
+
     def draw_starting_connection_with(self, other:'DirectlyFollowsState',
                                       ax:Axes):
         """
-        TODO
+        Attempts to draw a nice green arrow to other, used to denote the starting
+        flow of a trace.
         """
         # work out the side to enter on the target
-        if angle_from_origin(self.area.center) >= 45:
-            degree = np.random.randint(30,150)
+        if angle_from_origin(self.origin) > angle_from_origin(other.origin):
+            rdeg = np.random.randint(130,160)
             rotation = 1
         else:
-            degree = np.random.randint(30,90) * -1
+            rdeg = np.random.randint(-90,-45)
             rotation = -1
-        left = self.area.get_point_on_perimeter(degree)
-        right = other.area.get_point_on_perimeter(degree)
+        left = self.area.get_point_on_perimeter(np.random.randint(15,45))
+        right = other.area.get_point_on_perimeter(rdeg)
         # find the mid point between self and other
         difference = left.difference(right)
         bet_origin = left.add_shift(
@@ -211,16 +312,16 @@ class DirectlyFollowsState():
         color = "green"
         shift = 0.25
         if rotation < 0:
-            starting = -115
+            starting = -160
             # slowly increase until x is right of left
             check = bet_circle.get_point_on_perimeter(starting)
-            while (check.x < left.x):
+            while (check.difference(left).power() > 0.05):
                 starting += shift
                 check = bet_circle.get_point_on_perimeter(starting)
             ending = 115
             # slowly decrease until x is right of right
             check = bet_circle.get_point_on_perimeter(ending)
-            while (check.x < right.x):
+            while (check.difference(right).power() > 0.05):
                 ending -= shift
                 check = bet_circle.get_point_on_perimeter(ending)
         else:
@@ -353,10 +454,10 @@ class DirectlyFollowsPresentor(StaticPresentor):
                 self._debug("Cannot find concept:name in eventlog attributes.")
         # try to build follows languages
         if (isinstance(event_log, ComplexEventLog)):
-            self._followers = event_log.simplify().directly_follow_relations()
+            self._followers = event_log.simplify().directly_follow_relations(debug=True)
             self._acts = event_log.seen_activities()
         elif(isinstance(event_log, EventLog)):
-            self._followers = event_log.directly_follow_relations()
+            self._followers = event_log.directly_follow_relations(debug=True)
             self._acts = event_log.seen_activities()
         else:
             raise ValueError("Directly follows construction not implemented for"
@@ -389,17 +490,20 @@ class DirectlyFollowsPresentor(StaticPresentor):
             for start 
             in followers.starts()
         ]
-        body = [
-            act 
-            for act 
-            in followers.activities()
-        ]
-        body = sorted(body)
         enders = [ 
             end
             for end 
             in followers.ends()
         ]
+        pairs = [
+            pair
+            for pair 
+            in followers.pairs()
+            if pair not in starters and pair not in enders
+        ]
+        body = [ p.left() for p in pairs ] + [ p.right() for p in pairs]
+        body = list(set(body))
+        body = sorted(body)
         # work out starting spline
         r = .5
         curver = CCircle(
@@ -452,23 +556,23 @@ class DirectlyFollowsPresentor(StaticPresentor):
         # add arcs and inbetween starts and ends
         for letter in body:
             curver = curver.change_radius(r * 4)
-            point =  curver.find_equal_distance_points(
-                10,
-                80,
-                3
-            )[1]
+            # point =  choice(curver.find_equal_distance_points(10,80,9)[2:-2])
+            point =  curver.find_equal_distance_points(10,80,3)[1]
             state = DirectlyFollowsState(
                 point, r, imputer.get_label(letter)
             )
             self._pos_store[letter] = state
             state.plot(self._ax)
 
-        for letter in body:
-            for flow in followers.get(letter):
-                if flow.right() == "END":
+        for pair in pairs:
+                # skip flows where proceeding is only end (will be added later)
+                if (pair.proceeding() == set(["END"])):
                     continue
-                start = self._pos_store[letter]
-                end = self._pos_store[flow.right()]
+                # skip flows whee preceding is only source (will be added later)
+                if (pair.preceding() == set(["SOURCE"])):
+                    continue
+                start = self._pos_store[pair.left()]
+                end = self._pos_store[pair.right()]
                 start.draw_connection_with(
                     end,
                     self._ax
@@ -497,27 +601,22 @@ class DirectlyFollowsPresentor(StaticPresentor):
         for start in starters:
             state = self._pos_store[start]
             for prec in start.proceeding():
+                if (prec == "END"):
+                    continue
                 other = self._pos_store[prec]
-                # self._create_arrow(
-                #     state.origin,
-                #     other.origin,
-                #     "green",
-                #     95
-                # )
                 state.draw_starting_connection_with(other, self._ax,)
 
         # plot directly preceeding activites from ends
         for end in enders:
             state = self._pos_store[end]
             for prec in end.preceding():
+                if (prec == "SOURCE"):
+                    continue
                 other = self._pos_store[prec]
-                self._create_arrow(
-                    other.origin,
-                    state.origin,
-                    "red",
-                    95
+                other.draw_ending_connection_with(
+                    state,
+                    self._ax
                 )
-                # other.draw_connection_with(state, self._ax, linecolour="red")
 
     def get_axes(self) -> Axes:
         return self._ax 
