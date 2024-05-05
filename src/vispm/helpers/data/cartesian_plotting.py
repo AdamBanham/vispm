@@ -40,6 +40,12 @@ class CShift():
             self.x + other.x,
             self.y + other.y
         )
+    
+    def power(self) -> float:
+        """
+        Returns the power of the shift (vector length of longside of triangle)
+        """
+        return np.sqrt( np.power(self.x, 2) + np.power(self.y, 2))
 
 @dataclass(frozen=True)
 class CPoint():
