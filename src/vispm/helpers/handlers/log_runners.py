@@ -54,6 +54,7 @@ class SequenceDataExtractor():
             if time != None:
                 weekday = time.weekday()
                 monthday = time.day
+                hour = time.hour
                 time = time.timestamp() - startingTime
             else:
                 weekday = -1
@@ -62,7 +63,7 @@ class SequenceDataExtractor():
             label = self._extract_xes_key(self.LABEL_ATTR, event, self.DEFAULT)
             lifecycle = self._extract_xes_key(self.LIFE_ATTR, event, self.DEFAULT)
             resource = str(self._extract_xes_key(self.RESOURCE_ATTR, event , self.DEFAULT))
-            data = SequenceData(time,weekday,monthday,label,lifecycle,resource)
+            data = SequenceData(time,weekday,monthday,hour,label,lifecycle,resource)
             timepoints.append(data)
         timepoints = sorted(timepoints, key=lambda x: x.time)
         return timepoints
