@@ -384,10 +384,10 @@ class DescriptionHistogramExtension(ChartExtension):
                 cbar.ax.get_yaxis().set_label_position('left')
         
         # add height label to histogram 
-        # if self._counter == self.Density.Event:
-        #     height_label = "No. of events"
-        # else:
-        height_label = "No. of traces"
+        if self._counter == self.Density.Event:
+            height_label = "No. of events"
+        else:
+            height_label = "No. of traces"
 
         #add bin label
         bin_label = ""
