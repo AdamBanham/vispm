@@ -58,6 +58,7 @@ class DescriptionHistogramExtension(ChartExtension):
             EventLabel=auto()
             Weekday=auto()
             Monthday=auto()
+            Hourly=auto()
             TraceDuration=auto()
             TraceLength=auto()
 
@@ -106,8 +107,29 @@ class DescriptionHistogramExtension(ChartExtension):
             return self._create_tdur_bins(sequences)
         elif self._describe == self.Describe.TraceLength:
             return self._create_tlen_bins(sequences)
+        elif self._describe == self.Describe.Hourly:
+            return self._create_hourly_bins(sequences)
         else:
             raise ValueError(f"Description type not support :: {self._describe}")
+
+    def _create_hourly_bins(self, sequences:List[List[SequenceData]]) -> Tuple[List[List[float]], List[Tuple[float,float,float,float]], List[float], List[str]]:
+        bin_values= []
+        bin_edges= list(range(0,25))
+        bin_labels=[]
+        colours = []
+        colour_maximun = 24
+
+        self._colourmap = get_cmap(self._colormap, colour_maximun)
+        for hourly,label in zip(range(0,colour_maximun), range(0,colour_maximun)):
+            if self._counter == self.Density.Event:
+                x_subset = [ hourly+0.5 for seq in sequences for s in seq if s.hour == hourly ]
+            elif self._counter ==self.Density.Trace:
+                x_subset = [ hourly+0.5 for seq in sequences if hourly in [ s.hour for s in seq] ]
+            bin_values = bin_values + x_subset
+            colours.append(self._colormap(hourly/colour_maximun))
+            bin_labels.append(label)
+
+        return bin_values, colours, bin_edges, bin_labels, colour_maximun 
 
     def _create_tlen_bins(self, sequences:List[List[SequenceData]]) -> Tuple[List[List[float]], List[Tuple[float,float,float,float]], List[float], List[str]]:
         bin_values= []
