@@ -111,6 +111,13 @@ class StaticDottedChartPresentor(StaticPresentor):
             self._ax = ax
         if reset_it:
             plt.ion()
+        # adjust markersize
+        # radius in data coordinates:
+        self._marker_raidus = 2 # units
+        # radius in display coordinates:
+        r_ = self._ax.transData.transform([self._marker_raidus,0])[0] - self._ax.transData.transform([0,0])[0] # points
+        # marker size as the area of a circle
+        self._markersize = (2*r_)**2
         # process event data
         self._debug("Processing event data...")
         self._sequences = self._extractor(event_log, start_time=starting_time)
@@ -156,7 +163,7 @@ class StaticDottedChartPresentor(StaticPresentor):
             new_colors = self._colour_schemer(trace_id=y,seq_data=sequence)
             colors[start_idx:end_idx] = new_colors
             x_data[start_idx:end_idx] = [ seq.time for seq in sequence ]
-            y_data[start_idx:end_idx] = [ y for _ in  range(len(sequence)) ]
+            y_data[start_idx:end_idx] = [ (y * self._marker_raidus)  + (self._marker_raidus/2.0) for _ in  range(len(sequence)) ]
             if y > 0 and y % percentile == 0:
                 self._debug(f" {(y/total_seqs)*100:03.1f}% compiled...        ",end="\r")
             start_idx = end_idx
@@ -173,6 +180,12 @@ class StaticDottedChartPresentor(StaticPresentor):
                 alpha=0.66
             )
             all_artists.append(artists)
+        # handle y ticks using y_data
+        max_y = max(y_data)+self._marker_raidus
+        self._ax.set_ylim(-self._marker_raidus, max_y)
+        self._ax.set_yticks([])
+        self._ax.set_yticks([(self._marker_raidus/2.0),max_y])
+        self._ax.set_yticklabels([ "1",f"{int(len(sequences))}"])
         return all_artists
 
     def plot(self) -> Figure:
@@ -182,11 +195,10 @@ class StaticDottedChartPresentor(StaticPresentor):
         self._create_dotted_frame(self._sequences,self._ax)
         self._debug("Cleaning up plot...")
         #clean up plot
-        self._ax.set_ylim([0,len(self._sequences)])
+        # self._ax.set_ylim([0,len(self._sequences) * self._marker_raidus])
         min_x = self._sequences[0][0].time
         max_x = max([ seq[-1].time for seq in self._sequences if len(seq) > 0])
         self._ax.set_xlim([min_x, max_x ])
-        self._ax.set_yticks([])
         # add suitable xticks 
         diff_x = max_x - min_x 
         tickers = [ min_x] + \
@@ -208,8 +220,6 @@ class StaticDottedChartPresentor(StaticPresentor):
         #add labels
         self._ax.set_ylabel("Trace")
         self._ax.set_xlabel("Time")
-        self._ax.set_yticks([len(self._sequences)])
-        self._ax.set_yticklabels([ f"{int(len(self._sequences))}"])
         self._ax.set_title(f"Dotted Chart of\n {self._log_name}")
         self._ax.grid(True,color="grey",alpha=0.33)
         self._debug("Plot is ready to show...")
