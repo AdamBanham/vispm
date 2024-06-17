@@ -16,12 +16,15 @@ from matplotlib.artist import Artist
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.colors import ListedColormap
+from matplotlib.collections import PatchCollection
+from matplotlib.patches import Circle
 
 PLOT_STATE = ChartExtension.UpdateState
 
 class StaticDottedChartPresentor(StaticPresentor):
     """
-    Presentor for generating a static dotted chart for a given log. Should be used in a one shot manner.
+    Presentor for generating a static dotted chart for a given log. Should 
+    be used in a one shot manner.
 
     Call sequence:
     ---
@@ -34,8 +37,11 @@ class StaticDottedChartPresentor(StaticPresentor):
     Parameters:
     ----
     event_log:`EventLog`\n
-    [Required] A python object, where sequence behaviour (i.e. log[1:5] returns a list of traces) and mapping behaviour (i.e log["attr"]) return attributes attached to the event log.\n
-    Currently assumes that the given log, is very similar to the pm4py implementation.\n
+    [Required] A python object, where sequence behaviour (i.e. log[1:5] 
+    returns a list of traces) and mapping behaviour (i.e log["attr"]) return 
+    attributes attached to the event log.\n
+    Currently assumes that the given log, is very similar to the pm4py 
+    implementation.\n
     \n
     dpi:`int=96`\n
     [Optional] The dpi of the figure, if generating one.\n
@@ -47,18 +53,24 @@ class StaticDottedChartPresentor(StaticPresentor):
     [Optional] The relevative size of each circle drawn for each event.\n
     \n
     ax:`matplotlib.axes.Axes=None`\n
-    [Optional] Instead of generating a figure and axes, use the given axes as is to plot.\n
+    [Optional] Instead of generating a figure and axes, use the given axes 
+    as is to plot.\n
     \n
     starting_time:`datetime.datetime=None`\n
-    [Optional] Instead of inferring the starting time of the event log, use the given timstamp as the starting point for extracting data.\n
+    [Optional] Instead of inferring the starting time of the event log, 
+    use the given timstamp as the starting point for extracting data.\n
     \n
     colormap:`matplotlib.colors.ListedColormap=vispm.helpers.colours.colourmaps.CATEGORICAL`\n
-    [Optional] The colourmap to be passed to the colourer, some examples of coloursmaps can be found in vispm.helpers.colours.colourmaps.\n
+    [Optional] The colourmap to be passed to the colourer, some examples 
+    of coloursmaps can be found in vispm.helpers.colours.colourmaps.\n
     \n
     event_colour_scheme:`vispm.helpers.imputers.colour_imputers.ColourImputer=StaticDottedChartPresentor.EventColourScheme.Trace`\n
-    [Optional] The colourer to be used for deciding how a event is coloured, will be passed the colourmap at init.\n
-    For ease of use, this parameter can be controlled via a parameter enum, which passes a class to use via `StaticDottedChartPresentor.EventColourScheme`\n
-    For more advance use, a instance of a subclass from ColourImputer can be passed instead.\n
+    [Optional] The colourer to be used for deciding how a event is coloured, 
+    will be passed the colourmap at init.\n
+    For ease of use, this parameter can be controlled via a parameter enum, 
+    which passes a class to use via `StaticDottedChartPresentor.EventColourScheme`\n
+    For more advance use, a instance of a subclass from ColourImputer can be 
+    passed instead.\n
     \n
     debug:`bool=True`\n
     [Optional] Sets whether debug messages are printed.\n
@@ -73,6 +85,9 @@ class StaticDottedChartPresentor(StaticPresentor):
     _colour_schemer = None
     _show_debug = True
     _marksize =0.5
+
+    TraceSorting = SequenceDataExtractor.TraceSorting
+    TimeTransform = SequenceDataExtractor.TimestampTransform
 
     class EventColourScheme(Enum):
         """
@@ -91,12 +106,18 @@ class StaticDottedChartPresentor(StaticPresentor):
         def __call__(self,*args, **kwags) -> ColourImputer:
             return self.value(*args,**kwags)
 
-
-    def __init__(self, event_log:EventLog, dpi:int=96, figsize:Tuple[float,float]=(8,8), ax:Axes=None,
-        markersize:float=0.5, starting_time=None,
-        colormap:ListedColormap=CATEGORICAL,debug:bool=True,
-        event_colour_scheme:EventColourScheme=EventColourScheme.Trace) -> None:
+    def __init__(self, event_log:EventLog, dpi:int=96, 
+                 figsize:Tuple[float,float]=(8,8), ax:Axes=None,
+                 markersize:float=0.5, 
+                 starting_time=None,
+                 trace_sorting:TraceSorting=TraceSorting.firstevent,
+                 time_transform:TimeTransform=TimeTransform.relative_to_log,
+                 colormap:ListedColormap=CATEGORICAL,debug:bool=True,
+                 event_colour_scheme:EventColourScheme=EventColourScheme.Trace
+                 ) -> None:
         super().__init__(debug=debug)
+        self._sorting = trace_sorting
+        self._time_transform = time_transform
         # set default values
         self._marksize = markersize
         # so turns out its painful to not show a figure and still show it when needed.
@@ -115,12 +136,17 @@ class StaticDottedChartPresentor(StaticPresentor):
         # radius in data coordinates:
         self._marker_raidus = 2 # units
         # radius in display coordinates:
-        r_ = self._ax.transData.transform([self._marker_raidus,0])[0] - self._ax.transData.transform([0,0])[0] # points
+        # r_ = self._ax.transData.transform([self._marker_raidus,0])[0] - self._ax.transData.transform([0,0])[0] # points
         # marker size as the area of a circle
-        self._markersize = (2*r_)**2
+        # self._markersize = (2*r_)**2
+        # self._marker_raidus = r_
         # process event data
         self._debug("Processing event data...")
-        self._sequences = self._extractor(event_log, start_time=starting_time)
+        self._sequences = self._extractor(event_log, 
+                                          start_time=starting_time,
+                                          sorting=trace_sorting,
+                                          time_transform=time_transform
+                                          )
         # handle colourer input
         if isinstance(event_colour_scheme, self.EventColourScheme):
             self._colour_schemer = event_colour_scheme(cm=colormap)
@@ -161,9 +187,10 @@ class StaticDottedChartPresentor(StaticPresentor):
         for y,sequence in enumerate(sequences):
             end_idx = start_idx + len(sequence)
             new_colors = self._colour_schemer(trace_id=y,seq_data=sequence)
-            colors[start_idx:end_idx] = new_colors
-            x_data[start_idx:end_idx] = [ seq.time for seq in sequence ]
-            y_data[start_idx:end_idx] = [ (y * self._marker_raidus)  + (self._marker_raidus/2.0) for _ in  range(len(sequence)) ]
+            for idx,seq in enumerate(sequence): 
+                colors[start_idx+idx] = new_colors[idx]
+                x_data[start_idx+idx] = seq.time
+                y_data[start_idx+idx] = (y * (self._marker_raidus * 4))
             if y > 0 and y % percentile == 0:
                 self._debug(f" {(y/total_seqs)*100:03.1f}% compiled...        ",end="\r")
             start_idx = end_idx
@@ -172,56 +199,100 @@ class StaticDottedChartPresentor(StaticPresentor):
         self._debug("Plotting data...")
         self.update_extensions(x_data=x_data, y_data=y_data, colors=colors, colour_imputer=self._colour_schemer,sequences=sequences)
         for xers,yers,cers in zip(iter_chunker(x_data,500),iter_chunker(y_data,500),iter_chunker(colors,500)):
-            artists = ax.scatter(
-                x=xers,
-                y=yers,
-                s = self._marksize,
-                color=cers,
-                alpha=0.66
+            patches = []
+            for x,y,c in zip(xers,yers,cers):
+                patches.append(
+                    Circle(
+                        (x,y),
+                        radius=self._marker_raidus,
+                        color=c,
+                        alpha=0.66
+                    )
+                )
+            # artists = ax.scatter(
+            #     x=xers,
+            #     y=yers,
+            #     edgecolors=None,
+            #     s = self._marksize,
+            #     color=cers,
+            #     alpha=0.66
+            # )
+            pc = PatchCollection(
+                patches,
+                match_original=True
             )
-            all_artists.append(artists)
+            ax.add_artist(pc)
+            all_artists.append(pc)
+            
         # handle y ticks using y_data
-        max_y = max(y_data)+self._marker_raidus
-        self._ax.set_ylim(-self._marker_raidus, max_y)
+        max_y = max(y_data)+self._marker_raidus * 3
+        self._ax.set_ylim(-self._marker_raidus * 3, max_y)
         self._ax.set_yticks([])
-        self._ax.set_yticks([(self._marker_raidus/2.0),max_y])
+        self._ax.set_yticks([0,max_y])
         self._ax.set_yticklabels([ "1",f"{int(len(sequences))}"])
         return all_artists
 
     def plot(self) -> Figure:
         self._ax = self._adjust_for_extensions(self._fig)
         self.update_plot_state(PLOT_STATE.DRAWING)
-        self.update_extensions(sequences=self._sequences)
-        self._create_dotted_frame(self._sequences,self._ax)
-        self._debug("Cleaning up plot...")
+        self._debug("setting up axis for plot...")
         #clean up plot
         # self._ax.set_ylim([0,len(self._sequences) * self._marker_raidus])
-        min_x = self._sequences[0][0].time
-        max_x = max([ seq[-1].time for seq in self._sequences if len(seq) > 0])
-        self._ax.set_xlim([min_x, max_x ])
-        # add suitable xticks 
-        diff_x = max_x - min_x 
-        tickers = [ min_x] + \
-                    [ min_x + (portion/100) * diff_x 
-                        for portion in range(10,100,10) ] + \
-                    [ max_x ]
-        suffix, scale = self._find_scale(diff_x)
-        self._ax.set_xticks(
-            tickers
-        )
-        self._ax.set_xticklabels(
-            [ 
-                f"{(tick - min_x) / scale:.2f}{suffix}"
-                for tick 
-                in self._ax.get_xticks()
-            ],
-            rotation=-90
-        )    
+        if self._sorting == self.TraceSorting.tracelength and \
+            self._time_transform == self.TimeTransform.constant_per_event:
+            min_x = len(self._sequences[0]) * SequenceDataExtractor._constant_time_per_event
+            max_x = len(self._sequences[-1]) * SequenceDataExtractor._constant_time_per_event
+            self._ax.set_xlim([
+                min_x , 
+                max_x 
+            ])
+            # add suitable xticks 
+            diff_x = max_x - min_x 
+            tickers = [ min_x] + \
+                        [ min_x + (portion/100) * diff_x 
+                            for portion in range(10,100,10) ] + \
+                        [ max_x ]
+            self._ax.set_xticks(
+                tickers
+            )
+            self._ax.set_xticklabels(
+                [ 
+                    f"{(tick) / SequenceDataExtractor._constant_time_per_event}"
+                    for tick 
+                    in self._ax.get_xticks()
+                ],
+                rotation=-90
+            )    
+            self._ax.set_xlabel("Event Number")
+        else:
+            min_x = self._sequences[0][0].time
+            max_x = max([ seq[-1].time for seq in self._sequences if len(seq) > 0])
+            self._ax.set_xlim([min_x, max_x ])
+            # add suitable xticks 
+            diff_x = max_x - min_x 
+            tickers = [ min_x] + \
+                        [ min_x + (portion/100) * diff_x 
+                            for portion in range(10,100,10) ] + \
+                        [ max_x ]
+            suffix, scale = self._find_scale(diff_x)
+            self._ax.set_xticks(
+                tickers
+            )
+            self._ax.set_xticklabels(
+                [ 
+                    f"{(tick - min_x) / scale:.2f}{suffix}"
+                    for tick 
+                    in self._ax.get_xticks()
+                ],
+                rotation=-90
+            )    
+            self._ax.set_xlabel("Time")
         #add labels
         self._ax.set_ylabel("Trace")
-        self._ax.set_xlabel("Time")
         self._ax.set_title(f"Dotted Chart of\n {self._log_name}")
         self._ax.grid(True,color="grey",alpha=0.33)
+        self.update_extensions(sequences=self._sequences)
+        self._create_dotted_frame(self._sequences,self._ax)
         self._debug("Plot is ready to show...")
         return self._fig
 

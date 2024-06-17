@@ -3,6 +3,10 @@ from ..data.log_data import SequenceData
 from ..metaclasses.pm4py import EventLog,Trace,Event
 
 from typing import List, Any
+from enum import Enum,auto
+
+from datetime import timedelta, datetime
+from time import time as curr_time
 
 class SequenceDataExtractor():
     """
@@ -18,11 +22,35 @@ class SequenceDataExtractor():
 
     DEFAULT = "MISSING"
 
+    class TraceSorting(Enum):
+        """
+        Determines how the returned sequence data is ordered.
+        """
+        firstevent = auto()
+        tracelength= auto()
+
+    class TimestampTransform(Enum):
+        """
+        Determines how timestamps are handled in returned sequence data.
+        """
+        raw = auto()
+        relative_to_log = auto()
+        relative_to_trace = auto()
+        constant_per_event = auto()
+
+
+    _constant_time_per_event = 15
+
     def __init__(self) -> None:
         self._errored_keys = dict() 
 
-    def __call__(self, event_log:EventLog,start_time=None) -> List[SequenceData]:
+    def __call__(self, event_log:EventLog,start_time=None,
+                 sorting:TraceSorting=TraceSorting.firstevent,
+                 time_transform:TimestampTransform=TimestampTransform.relative_to_log
+                 ) -> List[SequenceData]:
         """Begins extracting SequenceData from an EventLog"""
+        self._sorting = sorting
+        self._time_transform = time_transform
         return self._convert_log(event_log,start_time=start_time)
 
     def _extract_xes_key(self, key:str, event:Event,default:Any) -> Any:
@@ -49,13 +77,16 @@ class SequenceDataExtractor():
 
     def _convert_trace(self,trace:Trace, startingTime:float) -> List[SequenceData]:
         timepoints = [] 
-        for event in trace:
+        for ev_no, event in enumerate(trace):
             time = self._extract_xes_key(self.TIME_ATTR, event, None)#event[self.TIME_ATTR].timestamp() - startingTime
             if time != None:
                 weekday = time.weekday()
                 monthday = time.day
                 hour = time.hour
-                time = time.timestamp() - startingTime
+                if self._time_transform == self.TimestampTransform.constant_per_event:
+                    time = self._constant_time_per_event * ev_no
+                else:
+                    time = time.timestamp() - startingTime
             else:
                 weekday = -1
                 monthday = -1 
@@ -73,22 +104,27 @@ class SequenceDataExtractor():
         try :
             from pmkoalas.complex import ComplexEventLog
             if isinstance(log, ComplexEventLog):
-                if start_time != None:
-                    startingTime = start_time.timestamp()
-                else:
-                    startingTime = None
-                    for variant, traces in log:
-                        for trace in traces:
-                            time = self._extract_xes_key(self.TIME_ATTR, trace[0], None)
-                            if time == None:
-                                continue
-                            elif startingTime == None and time != None:
-                                startingTime = time 
-                            else:
-                                if (time < startingTime):
-                                    startingTime = time
+                if self._time_transform == self.TimestampTransform.relative_to_log:
+                    if start_time != None:
+                        startingTime = start_time.timestamp()
+                    else:
+                        startingTime = None
+                        for variant, traces in log:
+                            for trace in traces:
+                                time = self._extract_xes_key(self.TIME_ATTR, trace[0], None)
+                                if time == None:
+                                    continue
+                                elif startingTime == None and time != None:
+                                    startingTime = time 
+                                else:
+                                    if (time < startingTime):
+                                        startingTime = time
+                if self._time_transform == self.TimestampTransform.constant_per_event:
+                    startingTime = datetime.fromtimestamp(curr_time())
                 for variant, traces in log:
                         for trace in traces:
+                            if self._time_transform == self.TimestampTransform.relative_to_trace:
+                                startingTime = self._extract_xes_key(self.TIME_ATTR, trace[0], None)
                             log_sequences.append(self._convert_trace(trace,startingTime.timestamp()))
             else:
                 raise ValueError("not a pmkoalas data structure")
@@ -99,5 +135,12 @@ class SequenceDataExtractor():
                 startingTime = start_time.timestamp()
             for trace in log:
                 log_sequences.append(self._convert_trace(trace,startingTime))
-        log_sequences = sorted(log_sequences,key=lambda x: x[0].time if len(x)> 0 else startingTime)
+        # handle sorting the returned extraction
+        if self._sorting == self.TraceSorting.firstevent:
+            log_sequences = sorted(log_sequences,
+                key=lambda x: x[0].time if len(x)> 0 else startingTime
+            )
+        elif self._sorting == self.TraceSorting.tracelength:
+            print("sorting by trace length")
+            log_sequences = sorted(log_sequences,key=lambda x: len(x))
         return log_sequences
