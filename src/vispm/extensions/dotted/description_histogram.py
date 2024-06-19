@@ -310,8 +310,12 @@ class DescriptionHistogramExtension(ChartExtension):
                     fontdict={"fontsize": 5, 'rotation': -13})
             else:
                 self._axes.set_xticks(xticks)
+                if len(bin_labels) > 15:
+                    fontsizer = 3
+                else:
+                    fontsizer = 5
                 self._axes.set_xticklabels(bin_labels, 
-                    fontdict={"fontsize": 5, 'rotation': -13})
+                    fontdict={"fontsize": fontsizer, 'rotation': 90})
             self._axes.set_xlim([min(bin_edges), max(bin_edges)])
         else:
             if self._describe == self.Describe.TraceDuration:
