@@ -248,7 +248,7 @@ class StaticDottedChartPresentor(StaticPresentor):
         # self._ax.set_ylim([0,len(self._sequences) * self._marker_raidus])
         if self._sorting == self.TraceSorting.tracelength and \
             self._time_transform == self.TimeTransform.constant_per_event:
-            min_x = len(self._sequences[0]) * SequenceDataExtractor._constant_time_per_event
+            min_x = -2 * SequenceDataExtractor._constant_time_per_event
             max_x = len(self._sequences[-1]) * SequenceDataExtractor._constant_time_per_event
             self._ax.set_xlim([
                 min_x , 
