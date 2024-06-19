@@ -39,7 +39,7 @@ class SequenceDataExtractor():
         constant_per_event = auto()
 
 
-    _constant_time_per_event = 15
+    _constant_time_per_event = 10
 
     def __init__(self) -> None:
         self._errored_keys = dict() 
