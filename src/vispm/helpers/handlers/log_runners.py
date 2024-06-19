@@ -125,7 +125,10 @@ class SequenceDataExtractor():
                         for trace in traces:
                             if self._time_transform == self.TimestampTransform.relative_to_trace:
                                 startingTime = self._extract_xes_key(self.TIME_ATTR, trace[0], None)
-                            log_sequences.append(self._convert_trace(trace,startingTime.timestamp()))
+                            if self._time_transform != self.TimestampTransform.raw:
+                                log_sequences.append(self._convert_trace(trace,startingTime.timestamp()))
+                            else:
+                                log_sequences.append(self._convert_trace(trace,0))
             else:
                 raise ValueError("not a pmkoalas data structure")
         except:
