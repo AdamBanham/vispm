@@ -9,6 +9,7 @@ from ..extensions._base import ChartExtension
 from ._base import StaticPresentor
 
 from typing import List, Tuple, Any
+from datetime import datetime
 from math import ceil, floor
 
 from matplotlib import pyplot as plt
@@ -59,6 +60,15 @@ class StaticDottedChartPresentor(StaticPresentor):
     starting_time:`datetime.datetime=None`\n
     [Optional] Instead of inferring the starting time of the event log, 
     use the given timstamp as the starting point for extracting data.\n
+    \n
+    trace_sorting:`StaticDottedChartPresentor.TraceSorting=firstevent`\n
+    [Optional] Decides how traces are sorted on the y-axis for plotting,
+    default value sorts traces by the timestamp of their first event.
+    \n
+    time_transform:`StaticDottedChartPresentor.TimeTransform=relative_to_log`\n
+    [Optional] Decides how the timestamp for events are handled for plotting 
+    and for the axis labels. Defaults to making all timetamps relative to the
+    first event seen in the log.
     \n
     colormap:`matplotlib.colors.ListedColormap=vispm.helpers.colours.colourmaps.CATEGORICAL`\n
     [Optional] The colourmap to be passed to the colourer, some examples 
@@ -170,8 +180,6 @@ class StaticDottedChartPresentor(StaticPresentor):
                 self._debug("Cannot find concept:name in eventlog attributes.")
         self._debug("Ready to plot...")
 
-
-
     def _create_dotted_frame(self,sequences:List[List[SequenceData]], ax:Axes) -> List[Artist]:
         self.update_plot_state(PLOT_STATE.PLOTTING)
         self._debug("Compiling plot data...             ", end="\r")
@@ -278,14 +286,27 @@ class StaticDottedChartPresentor(StaticPresentor):
             self._ax.set_xticks(
                 tickers
             )
-            self._ax.set_xticklabels(
-                [ 
-                    f"{(tick - min_x) / scale:.2f}{suffix}"
-                    for tick 
-                    in self._ax.get_xticks()
-                ],
-                rotation=-90
-            )    
+            if self._time_transform != self.TimeTransform.raw:
+                self._ax.set_xticklabels(
+                    [ 
+                        f"{(tick - min_x) / scale:.2f}{suffix}"
+                        for tick 
+                        in self._ax.get_xticks()
+                    ],
+                    rotation=-90
+                )    
+            else:
+                self._ax.set_xticklabels(
+                    [ 
+                        f"{datetime.fromtimestamp(tick).strftime('%d/%m/%Y')}"
+                        for tick 
+                        in self._ax.get_xticks()
+                    ],
+                    rotation=-90,
+                    fontdict={
+                        'fontsize' : 6
+                    }
+                )    
             self._ax.set_xlabel("Time")
         #add labels
         self._ax.set_ylabel("Trace")
