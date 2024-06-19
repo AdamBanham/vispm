@@ -267,33 +267,27 @@ class DescriptionHistogramExtension(ChartExtension):
 
     def draw(self, sequences:List[List[SequenceData]], *args, **kwags) -> Axes:
         self._debug("plotting histogram")
-
         # compute bin edges
         if self._describe == self.Describe.TraceDuration:
             bin_values, scale, bin_edges, scale_unit, colour_maximun = self._create_bins(sequences)
         else:
             bin_values, bin_colours, bin_edges, bin_labels, max_spot = self._create_bins(sequences)
-
         #decide on orientation of histogram
         if self._direction == self.Direction.EAST or self._direction == self.Direction.WEST:
             orientation = 'horizontal'
         else:
             orientation = 'vertical'
-
         # determine rwidth
         rwidth = 0.85
-
-
         # plot histogram
         n,_,rects = self._axes.hist(bin_values, bins=bin_edges, orientation=orientation,rwidth=rwidth)
+        dist = max(n)
+        portion = dist / 10 
+        tickers = [0] + [int(1 + portion*i) for i in range(1,10) ] + [int(max(n))]
+        norm = Normalize(vmin=min(tickers), vmax=max(tickers))
         # adjust bars to match colours
-        if self._describe in [self.Describe.TraceLength,self.Describe.TraceDuration]:
-            norm = Normalize(vmin=min(n),vmax=max(n))
-            for rect,v in zip(rects,n):
-                rect.set(color=self._colormap(norm(v)))
-        else:
-            for rect, c in zip(rects, bin_colours):
-                rect.set(color=c)
+        for rect,v in zip(rects,n):
+            rect.set(color=self._colormap(norm(v)))
         # adjust ticks 
         xticks = [ ed+0.5 for ed in bin_edges[:-1]]
         if self._direction == self.Direction.NORTH or self._direction == self.Direction.SOUTH:
@@ -340,48 +334,41 @@ class DescriptionHistogramExtension(ChartExtension):
                 self._axes.set_yticks(xticks)
                 self._axes.set_yticklabels(bin_labels, fontdict={"fontsize": 5})
             self._axes.set_ylim([min(bin_edges), max(bin_edges)])
-        
-        if  self._describe in [self.Describe.EventLabel, self.Describe.TraceDuration, self.Describe.TraceLength]:
-            # add colour bar to show where activties are likely to occur
-            divider = make_axes_locatable(self._axes)
-            if self._direction == self.Direction.NORTH or self._direction == self.Direction.SOUTH:
-                cbar_orientation = 'horizontal'
-                if self._direction == self.Direction.NORTH:
-                    cax = divider.append_axes('top', size='10%', pad=0.15)
-                else:
-                    cax = divider.append_axes('bottom', size='10%', pad=0.45)
-            else:
-                cbar_orientation = 'vertical'
-                if self._direction == self.Direction.EAST:
-                    cax = divider.append_axes('right', size='10%', pad=0.15)
-                else: 
-                    cax = divider.append_axes('left', size='10%', pad=0.55)
-
-            # add colourbar to axes
-            if self._describe == self.Describe.EventLabel:
-                dist = max_spot - 1
-                portion = dist / 10 
-                tickers = [1] + [int(1 + portion*i) for i in range(1,10) ] + [int(max_spot)]
-                norm = Normalize(vmin=min(tickers), vmax=max(tickers))
-                cbar = self._axes.get_figure().colorbar(ScalarMappable(cmap=self._colormap, norm=norm), ticks=tickers, orientation=cbar_orientation, cax=cax)
-                tickers = cbar.get_ticks()
-                cbar.set_ticks(tickers, labels=tickers, fontsize=6)
-                cbar.set_label("likely position in traces")
-            else:
-                dist = max(n) - min(n)
-                portion = dist / 10 
-                tickers = [int(min(n))] + [int(1 + portion*i) for i in range(1,10) ] + [int(max(n))]
-                cbar = self._axes.get_figure().colorbar(ScalarMappable(cmap=self._colormap, norm=norm), ticks=tickers, orientation=cbar_orientation, cax=cax)
-                cbar.set_ticks(tickers, labels=tickers, fontsize=6)
-                cbar.set_label("Count")
-
-            # adjust tick position for colorbar if needed
+        # add colour bar to show the height of bars
+        # divider = make_axes_locatable(self._axes)
+        if self._direction == self.Direction.NORTH or self._direction == self.Direction.SOUTH:
+            cbar_orientation = 'horizontal'
             if self._direction == self.Direction.NORTH:
-                cbar.ax.get_xaxis().set_ticks_position('top')
-                cbar.ax.get_xaxis().set_label_position('top')
-            if self._direction == self.Direction.WEST:
-                cbar.ax.get_yaxis().set_ticks_position('left')
-                cbar.ax.get_yaxis().set_label_position('left')
+                cbar_location='top'
+            #     # cax = divider.append_axes('top', size='10%', pad=0.25)
+            else:
+                cbar_location='bottom'
+            #     # cax = divider.append_axes('bottom', size='10%', pad=0.25)
+        else:
+            cbar_orientation = 'vertical'
+            if self._direction == self.Direction.EAST:
+                cbar_location='right'
+            #     # cax = divider.append_axes('right', size='10%', pad=0.25)
+            else: 
+                cbar_location='left'
+            #     # cax = divider.append_axes('left', size='10%', pad=0.25)
+
+        # add colourbar to axes
+        cbar = self._axes.get_figure().colorbar(
+            ScalarMappable(cmap=self._colormap, norm=norm),
+            ticks=tickers, orientation=cbar_orientation,
+            ax=self._axes, use_gridspec=True, location=cbar_location,
+            fraction=0.3, aspect=50)
+        cbar.set_ticks(tickers, labels=tickers, fontsize=6)
+        cbar.set_label("Count", fontsize=6)
+
+        # adjust tick position for colorbar if needed
+        if self._direction == self.Direction.NORTH:
+            cbar.ax.get_xaxis().set_ticks_position('top')
+            cbar.ax.get_xaxis().set_label_position('top')
+        if self._direction == self.Direction.WEST:
+            cbar.ax.get_yaxis().set_ticks_position('left')
+            cbar.ax.get_yaxis().set_label_position('left')
         
         # add height label to histogram 
         if self._counter == self.Density.Event:
