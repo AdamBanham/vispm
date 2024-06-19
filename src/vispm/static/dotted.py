@@ -136,7 +136,7 @@ class StaticDottedChartPresentor(StaticPresentor):
             plt.ioff()
         if ax == None:
             self._fig = plt.figure(figsize=figsize,dpi=dpi,constrained_layout=True)
-            self._ax = self._fig.subplots(1,1)
+            self._ax = self._fig.add_subplot(1,1,1,aspect=1)
         else:
             self._fig = ax.get_figure()
             self._ax = ax
@@ -144,12 +144,12 @@ class StaticDottedChartPresentor(StaticPresentor):
             plt.ion()
         # adjust markersize
         # radius in data coordinates:
-        self._marker_raidus = 2 # units
+        self._marker_raidus = 20 # units
         # radius in display coordinates:
-        # r_ = self._ax.transData.transform([self._marker_raidus,0])[0] - self._ax.transData.transform([0,0])[0] # points
+        r_ = self._ax.transData.transform([self._marker_raidus,0])[0] - self._ax.transData.transform([0,0])[0] # points
         # marker size as the area of a circle
-        # self._markersize = (2*r_)**2
-        # self._marker_raidus = r_
+        self._markersize = (2*r_)**2
+        self._marker_raidus = r_
         # process event data
         self._debug("Processing event data...")
         self._sequences = self._extractor(event_log, 
@@ -197,8 +197,8 @@ class StaticDottedChartPresentor(StaticPresentor):
             new_colors = self._colour_schemer(trace_id=y,seq_data=sequence)
             for idx,seq in enumerate(sequence): 
                 colors[start_idx+idx] = new_colors[idx]
-                x_data[start_idx+idx] = seq.time
-                y_data[start_idx+idx] = (y * (self._marker_raidus * 4))
+                x_data[start_idx+idx] = seq.time * self._x_scaler
+                y_data[start_idx+idx] = (y * self._y_step)
             if y > 0 and y % percentile == 0:
                 self._debug(f" {(y/total_seqs)*100:03.1f}% compiled...        ",end="\r")
             start_idx = end_idx
@@ -208,29 +208,30 @@ class StaticDottedChartPresentor(StaticPresentor):
         self.update_extensions(x_data=x_data, y_data=y_data, colors=colors, colour_imputer=self._colour_schemer,sequences=sequences)
         for xers,yers,cers in zip(iter_chunker(x_data,500),iter_chunker(y_data,500),iter_chunker(colors,500)):
             patches = []
-            for x,y,c in zip(xers,yers,cers):
-                patches.append(
-                    Circle(
-                        (x,y),
-                        radius=self._marker_raidus,
-                        color=c,
-                        alpha=0.66
-                    )
-                )
-            # artists = ax.scatter(
-            #     x=xers,
-            #     y=yers,
-            #     edgecolors=None,
-            #     s = self._marksize,
-            #     color=cers,
-            #     alpha=0.66
-            # )
-            pc = PatchCollection(
-                patches,
-                match_original=True
+            # for x,y,c in zip(xers,yers,cers):
+            #     patches.append(
+            #         Circle(
+            #             (x,y),
+            #             radius=self._marker_raidus * 0.85,
+            #             edgecolor='None',
+            #             facecolor=c,
+            #             alpha=0.80
+            #         )
+            #     )
+            artists = ax.scatter(
+                x=xers,
+                y=yers,
+                edgecolors='None',
+                s = self._marksize,
+                facecolors=cers,
+                alpha=0.66
             )
-            ax.add_artist(pc)
-            all_artists.append(pc)
+            # pc = PatchCollection(
+            #     patches,
+            #     match_original=True
+            # )
+            # ax.add_artist(pc)
+            all_artists.append(artists)
             
         # handle y ticks using y_data
         max_y = max(y_data)+self._marker_raidus * 3
@@ -250,22 +251,31 @@ class StaticDottedChartPresentor(StaticPresentor):
             self._time_transform == self.TimeTransform.constant_per_event:
             min_x = -2 * SequenceDataExtractor._constant_time_per_event
             max_x = len(self._sequences[-1]) * SequenceDataExtractor._constant_time_per_event
+            diff_x = max_x
+            # magic needed to make the circles really circle you know?
+            self._y_step = ((self._marker_raidus) + 5)
+            self._x_scaler = 1.0
+            self._y_steps = len(self._sequences) * self._y_step
+            if (diff_x < self._y_steps):
+                self._x_scaler =  self._y_steps / diff_x
+            else:
+                self._y_step = self._y_step * (diff_x/self._y_steps)
+            # handle x axis
             self._ax.set_xlim([
-                min_x , 
-                max_x 
+                min_x * self._x_scaler, 
+                max_x * self._x_scaler
             ])
             # add suitable xticks 
-            diff_x = max_x - min_x 
-            tickers = [ min_x] + \
-                        [ min_x + (portion/100) * diff_x 
+            tickers = [ 0 ] + \
+                        [ min_x * self._x_scaler + ((portion/100) * diff_x) * self._x_scaler
                             for portion in range(10,100,10) ] + \
-                        [ max_x ]
+                        [ max_x * self._x_scaler ]
             self._ax.set_xticks(
                 tickers
             )
             self._ax.set_xticklabels(
                 [ 
-                    f"{(tick) / SequenceDataExtractor._constant_time_per_event}"
+                    f"{(tick/self._x_scaler) / SequenceDataExtractor._constant_time_per_event:.1f}"
                     for tick 
                     in self._ax.get_xticks()
                 ],
@@ -275,21 +285,33 @@ class StaticDottedChartPresentor(StaticPresentor):
         else:
             min_x = self._sequences[0][0].time
             max_x = max([ seq[-1].time for seq in self._sequences if len(seq) > 0])
-            self._ax.set_xlim([min_x, max_x ])
             # add suitable xticks 
             diff_x = max_x - min_x 
-            tickers = [ min_x] + \
-                        [ min_x + (portion/100) * diff_x 
-                            for portion in range(10,100,10) ] + \
-                        [ max_x ]
+            # magic needed to make the circles really circle you know?
+            self._y_step = ((self._marker_raidus) + 5)
+            self._x_scaler = 1.0
+            self._y_steps = len(self._sequences) * self._y_step
+            if (diff_x < self._y_steps):
+                self._x_scaler =  self._y_steps / diff_x
+            else:
+                self._y_step = self._y_step * (diff_x/self._y_steps)
+            # handle x axis
+            self._ax.set_xlim([
+                min_x * self._x_scaler, 
+                max_x * self._x_scaler
+            ])
             suffix, scale = self._find_scale(diff_x)
+            tickers = [ min_x * self._x_scaler ] + \
+                        [ min_x * self._x_scaler + ((portion/100) * diff_x) * self._x_scaler
+                            for portion in range(10,100,10) ] + \
+                        [ max_x * self._x_scaler ]
             self._ax.set_xticks(
                 tickers
             )
             if self._time_transform != self.TimeTransform.raw:
                 self._ax.set_xticklabels(
                     [ 
-                        f"{(tick - min_x) / scale:.2f}{suffix}"
+                        f"{((tick/self._x_scaler) - min_x) / scale:.2f}{suffix}"
                         for tick 
                         in self._ax.get_xticks()
                     ],
@@ -298,7 +320,7 @@ class StaticDottedChartPresentor(StaticPresentor):
             else:
                 self._ax.set_xticklabels(
                     [ 
-                        f"{datetime.fromtimestamp(tick).strftime('%d/%m/%Y')}"
+                        f"{datetime.fromtimestamp((tick/self._x_scaler)).strftime('%d/%m/%Y')}"
                         for tick 
                         in self._ax.get_xticks()
                     ],
@@ -306,7 +328,7 @@ class StaticDottedChartPresentor(StaticPresentor):
                     fontdict={
                         'fontsize' : 6
                     }
-                )    
+                )
             self._ax.set_xlabel("Time")
         #add labels
         self._ax.set_ylabel("Trace")
