@@ -17,7 +17,8 @@ from matplotlib.artist import Artist
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.colors import ListedColormap
-from matplotlib.collections import PatchCollection
+from matplotlib.collections import PatchCollection,LineCollection
+from matplotlib.lines import Line2D
 from matplotlib.patches import Circle
 
 PLOT_STATE = ChartExtension.UpdateState
@@ -123,11 +124,13 @@ class StaticDottedChartPresentor(StaticPresentor):
                  trace_sorting:TraceSorting=TraceSorting.firstevent,
                  time_transform:TimeTransform=TimeTransform.relative_to_log,
                  colormap:ListedColormap=CATEGORICAL,debug:bool=True,
-                 event_colour_scheme:EventColourScheme=EventColourScheme.Trace
+                 event_colour_scheme:EventColourScheme=EventColourScheme.Trace,
+                 connect_events:bool=False
                  ) -> None:
         super().__init__(debug=debug)
         self._sorting = trace_sorting
         self._time_transform = time_transform
+        self._connect_events = connect_events
         # set default values
         self._marksize = markersize
         # so turns out its painful to not show a figure and still show it when needed.
@@ -144,7 +147,7 @@ class StaticDottedChartPresentor(StaticPresentor):
             plt.ion()
         # adjust markersize
         # radius in data coordinates:
-        self._marker_raidus = 20 # units
+        self._marker_raidus = 50 # units
         # radius in display coordinates:
         r_ = self._ax.transData.transform([self._marker_raidus,0])[0] - self._ax.transData.transform([0,0])[0] # points
         # marker size as the area of a circle
@@ -206,8 +209,30 @@ class StaticDottedChartPresentor(StaticPresentor):
         self._debug("Compiling finished...        ")
         self._debug("Plotting data...")
         self.update_extensions(x_data=x_data, y_data=y_data, colors=colors, colour_imputer=self._colour_schemer,sequences=sequences)
+        if (self._connect_events):
+            line_data = []
+            start_idx = 0
+            for sequence in sequences:
+                    end_idx = start_idx + len(sequence)
+                    line_data.append(
+                        [
+                            (x,y)
+                            for x,y 
+                            in zip(x_data[start_idx:end_idx],y_data[start_idx:end_idx])
+                        ]
+                    )
+                    start_idx = end_idx
+            lc = LineCollection(
+                segments=line_data,
+                colors="black",
+                linewidth= self._marksize * 0.8,
+                alpha=0.13
+            )
+            ax.add_artist(lc)
+            all_artists.append(lc)
+
         for xers,yers,cers in zip(iter_chunker(x_data,500),iter_chunker(y_data,500),iter_chunker(colors,500)):
-            patches = []
+            # patches = []
             # for x,y,c in zip(xers,yers,cers):
             #     patches.append(
             #         Circle(
@@ -221,7 +246,7 @@ class StaticDottedChartPresentor(StaticPresentor):
             artists = ax.scatter(
                 x=xers,
                 y=yers,
-                edgecolors='None',
+                edgecolors='none',
                 s = self._marksize,
                 facecolors=cers,
                 alpha=0.66
@@ -234,10 +259,10 @@ class StaticDottedChartPresentor(StaticPresentor):
             all_artists.append(artists)
             
         # handle y ticks using y_data
-        max_y = max(y_data)+self._marker_raidus * 3
-        self._ax.set_ylim(-self._marker_raidus * 3, max_y)
+        max_y = max(y_data)+self._marksize * 3
+        self._ax.set_ylim(-self._marksize * 3, max_y)
         self._ax.set_yticks([])
-        self._ax.set_yticks([0,max_y])
+        self._ax.set_yticks([0,max(y_data)])
         self._ax.set_yticklabels([ "1",f"{int(len(sequences))}"])
         return all_artists
 
@@ -253,7 +278,7 @@ class StaticDottedChartPresentor(StaticPresentor):
             max_x = len(self._sequences[-1]) * SequenceDataExtractor._constant_time_per_event
             diff_x = max_x
             # magic needed to make the circles really circle you know?
-            self._y_step = ((self._marker_raidus) + 5)
+            self._y_step = ((self._marksize) * 3)
             self._x_scaler = 1.0
             self._y_steps = len(self._sequences) * self._y_step
             if (diff_x < self._y_steps):
@@ -288,7 +313,7 @@ class StaticDottedChartPresentor(StaticPresentor):
             # add suitable xticks 
             diff_x = max_x - min_x 
             # magic needed to make the circles really circle you know?
-            self._y_step = ((self._marker_raidus) + 5)
+            self._y_step = ((self._marksize) * 2)
             self._x_scaler = 1.0
             self._y_steps = len(self._sequences) * self._y_step
             if (diff_x < self._y_steps):
