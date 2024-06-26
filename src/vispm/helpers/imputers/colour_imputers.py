@@ -68,6 +68,25 @@ class EventLabelColourer(ColourImputer):
     def get_seen_order(self) -> List[Tuple[float,float,float,float]]:
         return self._seen_order
 
+class ResourceColourer(EventLabelColourer):
+    """
+    Colours event data by resource label, will return the same colour for each label.\n
+    Colour choice is decided by FIFO.
+    """
+
+    def __init__(self,cm=None) -> None:
+        super().__init__(cm=cm)
+
+    def _get_colour(self, data:SequenceData) -> Tuple[float,float,float,float]:
+        if data.resource in self._seen_labels.keys():
+            return self._query_colour(self._seen_labels[data.resource])
+        else:
+            self._seen_labels[data.resource] = self._counter
+            c = self._query_colour(self._counter)
+            if c not in self._seen_order:
+                self._seen_order.append(c)
+            self._counter += 1
+            return c
 
 class TraceColourer(ColourImputer):
     """

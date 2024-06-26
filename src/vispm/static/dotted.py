@@ -2,13 +2,14 @@ from enum import Enum
 from ..helpers.data.log_data import SequenceData
 from ..helpers.metaclasses.pm4py import EventLog
 from ..helpers.handlers.log_runners import SequenceDataExtractor
-from ..helpers.imputers.colour_imputers import ColourImputer, TraceColourer, EventLabelColourer
+from ..helpers.imputers.colour_imputers import ColourImputer, TraceColourer 
+from ..helpers.imputers.colour_imputers import EventLabelColourer, ResourceColourer
 from ..helpers.colours.colourmaps import CATEGORICAL
 from ..helpers.iters.tools import iter_chunker
 from ..extensions._base import ChartExtension
 from ._base import StaticPresentor
 
-from typing import List, Tuple, Any
+from typing import List, Tuple, Union
 from datetime import datetime
 from math import ceil, floor
 
@@ -113,20 +114,21 @@ class StaticDottedChartPresentor(StaticPresentor):
         """
         Trace:ColourImputer=TraceColourer
         EventLabel:ColourImputer=EventLabelColourer    
+        Resource:ColourImputer=ResourceColourer
 
         def __call__(self,*args, **kwags) -> ColourImputer:
             return self.value(*args,**kwags)
 
     def __init__(self, event_log:EventLog, dpi:int=96, 
-                 figsize:Tuple[float,float]=(8,8), ax:Axes=None,
-                 markersize:float=0.5, 
-                 starting_time=None,
-                 trace_sorting:TraceSorting=TraceSorting.firstevent,
-                 time_transform:TimeTransform=TimeTransform.relative_to_log,
-                 colormap:ListedColormap=CATEGORICAL,debug:bool=True,
-                 event_colour_scheme:EventColourScheme=EventColourScheme.Trace,
-                 connect_events:bool=False
-                 ) -> None:
+        figsize:Tuple[float,float]=(8,8), ax:Axes=None,
+        markersize:float=0.5, 
+        starting_time=None,
+        trace_sorting:TraceSorting=TraceSorting.firstevent,
+        time_transform:TimeTransform=TimeTransform.relative_to_log,
+        colormap:ListedColormap=CATEGORICAL,debug:bool=True,
+        event_colour_scheme:Union[EventColourScheme,ColourImputer]=EventColourScheme.Trace,
+        connect_events:bool=False
+        ) -> None:
         super().__init__(debug=debug)
         self._sorting = trace_sorting
         self._time_transform = time_transform
