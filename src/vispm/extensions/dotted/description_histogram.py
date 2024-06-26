@@ -80,6 +80,7 @@ class DescriptionHistogramExtension(ChartExtension):
            self._size = (1.3,1.3)
            self._colormap = colormap
            self._imputer_type = imputer_type
+           self._labeler = None
     
     def compatable_with(self, presentor:Presentor) -> bool:
         return self._compatable is presentor.__class__
@@ -175,7 +176,7 @@ class DescriptionHistogramExtension(ChartExtension):
         colours = []
         seen_activities = sorted(seen_activities, key=lambda x: (x['place']/x['count'],x['count']) )
         max_spot = np.ceil(max([ sa['place'] / sa["count"] for sa in seen_activities ]))
-        labeler = EventLabelImputer(type=EventLabelImputer.IMPUTER_TYPE.find(self._imputer_type))
+        self._labeler = EventLabelImputer(type=EventLabelImputer.IMPUTER_TYPE.find(self._imputer_type))
         self._colourmap = get_cmap(self._colormap, max_spot)
         for index,sa in enumerate(seen_activities):
             label = sa["act"]
@@ -187,10 +188,10 @@ class DescriptionHistogramExtension(ChartExtension):
             likely_place = sa['place'] / sa["count"]
             colours.append(self._colormap(likely_place/max_spot))
             bin_values = bin_values + x_subset
-            labeler.add_label(label)
-            bin_labels.append(labeler.get_label(label))
+            self._labeler.add_label(label)
+            bin_labels.append(self._labeler.get_label(label))
         bin_edges.append(len(seen_activities))
-        self._debug(f"Event labels are imputed as :: {labeler._lookup}")
+        self._debug(f"Event labels are imputed as :: {self._labeler._lookup}")
         return bin_values, colours, bin_edges, bin_labels, max_spot
 
     def _create_monthday_bins(self, sequences:List[List[SequenceData]]) -> Tuple[List[List[float]], List[Tuple[float,float,float,float]]]:
